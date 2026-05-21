@@ -2,12 +2,12 @@
 
 Falo X Force Cheng v1.02 teaching demo.
 
-This repository publishes an AI OCR classroom seating exercise for Gemini / Canva imitation practice.
+This repository publishes the AI OCR classroom seating tool and companion reference files for Gemini / Canva imitation practice.
 
 ## Entry
 
-- `index.html`: exercise entry. It intentionally does not link to the answer implementation.
-- `guide.html`: human-readable HTML guide, same teaching content as `guide.md`.
+- `index.html`: main runnable classroom seating tool.
+- `guide.html`: integrated HTML reference for Gemini / Canva imitation practice and human guidance.
 - `guide.md`: Markdown guide for docs, NotebookLM, or AI context experiments.
 - `classroom-seat-map-v1.01.html`: traceable v1.01 copy.
 - `classroom-seat-map-v1.02.html`: traceable v1.02 copy.

@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Gemini 模仿菜練習：AI OCR Classroom</title>
-  <meta name="description" content="AI OCR Classroom Gemini 模仿菜練習入口。不直接提供完整答案，讓學生比較只有題目與附加說明的差異。">
+  <title>教室座位 SVG 配置工具 | Falo X Force Cheng</title>
+  <meta name="description" content="單檔 HTML 教室座位配置工具：固定 3x2 長桌、18 張學生色卡與老師講台，保留 19 種 OCR 顏色，支援老師視角、學生視角、姓名編輯與本機儲存。">
   <meta name="author" content="Falo X Force Cheng">
   <style>
     :root {
@@ -14,240 +14,1738 @@
       --muted: #667085;
       --line: #d5dbea;
       --accent: #2563eb;
-      --soft: #eef4ff;
-      --warn: #9a3412;
+      --accent-dark: #1e40af;
+      --teacher: #b91c1c;
+      --seat: #eef2ff;
+      --seat-line: #9aa8d7;
+      --desk: #d8a45f;
+      --desk-line: #8a5a22;
+      --ok: #087443;
       --radius: 8px;
       font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
 
-    * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+    }
 
     body {
       margin: 0;
       background: var(--bg);
       color: var(--ink);
-      line-height: 1.7;
+      line-height: 1.5;
     }
 
-    main {
-      width: min(1040px, calc(100% - 32px));
+    .app {
+      width: min(1240px, calc(100% - 28px));
       margin: 0 auto;
-      padding: 32px 0 48px;
+      padding: 20px 0 32px;
     }
 
     header {
-      display: grid;
-      gap: 8px;
-      margin-bottom: 18px;
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: end;
+      margin-bottom: 16px;
     }
 
     h1 {
-      margin: 0;
-      font-size: clamp(30px, 6vw, 52px);
+      margin: 0 0 4px;
+      font-size: clamp(24px, 4vw, 36px);
       letter-spacing: 0;
-      line-height: 1.15;
     }
-
-    h2 {
-      margin: 0 0 10px;
-      font-size: 22px;
-    }
-
-    p { margin: 0 0 10px; }
 
     .subtitle {
+      margin: 0;
       color: var(--muted);
-      font-size: 18px;
-      max-width: 780px;
+      max-width: 760px;
     }
 
-    .grid {
+    .brand {
+      font-weight: 900;
+      color: #173b8f;
+      white-space: nowrap;
+    }
+
+    .layout {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 14px;
+      grid-template-columns: minmax(640px, 1fr) 340px;
+      gap: 16px;
       align-items: start;
     }
 
-    .card {
+    .panel {
       background: var(--panel);
       border: 1px solid var(--line);
       border-radius: var(--radius);
-      padding: 16px;
+      padding: 14px;
     }
 
-    .callout {
-      background: #fff7ed;
-      border-color: #fed7aa;
-      color: var(--warn);
+    .stage-panel {
+      display: grid;
+      gap: 10px;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    button {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      min-height: 38px;
+      padding: 8px 11px;
+      background: #fff;
+      color: var(--ink);
+      cursor: pointer;
+    }
+
+    button:hover {
+      border-color: #93a8d8;
+      background: #f8fbff;
+    }
+
+    button.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
       font-weight: 800;
     }
 
-    .link-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 12px;
+    button.primary:hover {
+      background: var(--accent-dark);
     }
 
-    a.button {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 40px;
-      padding: 9px 13px;
-      border: 1px solid var(--accent);
-      border-radius: var(--radius);
-      background: var(--accent);
-      color: #fff;
-      text-decoration: none;
+    button.danger {
+      color: #b42318;
+    }
+
+    button.active {
+      background: #eaf1ff;
+      border-color: #8cb0ff;
+      color: #173b8f;
       font-weight: 900;
     }
 
-    a.button.secondary {
+    .status {
+      min-height: 22px;
+      color: var(--ok);
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .view-note {
+      color: #344054;
+      font-size: 14px;
+      font-weight: 900;
+    }
+
+    .svg-wrap {
+      width: 100%;
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fdfcf8;
+      position: relative;
+    }
+
+    svg {
+      display: block;
+      width: 100%;
+      min-width: 760px;
+      height: auto;
+      user-select: none;
+      touch-action: none;
+    }
+
+    .room-bg {
+      fill: #fffaf0;
+    }
+
+    .front-zone {
+      fill: #eaf1ff;
+      stroke: #b6c7ee;
+      stroke-width: 2;
+    }
+
+    .podium {
+      fill: #f8d5d3;
+      stroke: var(--teacher);
+      stroke-width: 2;
+    }
+
+    .table {
+      fill: var(--desk);
+      stroke: var(--desk-line);
+      stroke-width: 2;
+    }
+
+    .seat {
+      fill: var(--seat);
+      stroke: var(--seat-line);
+      stroke-width: 1.5;
+      stroke-dasharray: 5 4;
+    }
+
+    .seat.is-target {
+      fill: #dcfce7;
+      stroke: #15803d;
+      stroke-width: 3;
+      stroke-dasharray: 0;
+    }
+
+    .label {
+      fill: #344054;
+      font-size: 15px;
+      font-weight: 800;
+      text-anchor: middle;
+      dominant-baseline: middle;
+      pointer-events: none;
+    }
+
+    .small-label {
+      fill: #667085;
+      font-size: 12px;
+      font-weight: 700;
+      text-anchor: middle;
+      dominant-baseline: middle;
+      pointer-events: none;
+    }
+
+    .person {
+      cursor: grab;
+    }
+
+    .person:active {
+      cursor: grabbing;
+    }
+
+    .person-card {
+      stroke: #1f2937;
+      stroke-width: 1.5;
+      rx: 8;
+      filter: url(#cardShadow);
+    }
+
+    .person-name {
+      fill: #111827;
+      font-size: 16px;
+      font-weight: 900;
+      text-anchor: middle;
+      dominant-baseline: middle;
+      pointer-events: none;
+    }
+
+    .person-role {
+      fill: rgba(17, 24, 39, 0.72);
+      font-size: 11px;
+      font-weight: 800;
+      text-anchor: middle;
+      dominant-baseline: middle;
+      pointer-events: none;
+    }
+
+    .person.is-dragging .person-card {
+      stroke: #2563eb;
+      stroke-width: 3;
+    }
+
+    .side-panel {
+      display: grid;
+      gap: 14px;
+    }
+
+    h2 {
+      margin: 0 0 8px;
+      font-size: 18px;
+    }
+
+    .hint {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .name-list {
+      display: grid;
+      gap: 8px;
+    }
+
+    .name-row {
+      display: grid;
+      grid-template-columns: 72px minmax(0, 1fr) 72px;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .name-row label {
+      color: #344054;
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    .name-row input,
+    .name-row select {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      min-height: 36px;
+      padding: 7px 9px;
+      color: var(--ink);
       background: #fff;
-      color: var(--accent);
     }
 
-    ul, ol {
-      margin: 8px 0 0;
-      padding-left: 22px;
+    .rule-list {
+      margin: 0;
+      padding-left: 20px;
+      color: #344054;
+      font-size: 14px;
     }
 
-    li + li { margin-top: 6px; }
-
-    code {
-      background: var(--soft);
-      border-radius: 4px;
-      padding: 2px 5px;
+    .rule-list li + li {
+      margin-top: 6px;
     }
 
-    .diagram {
+    .rules-svg {
       width: 100%;
       height: auto;
       border: 1px solid var(--line);
       border-radius: var(--radius);
-      background: #fffaf0;
+      background: #fbfcff;
     }
 
-    .svg-title {
+    .case-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .case-row button {
+      min-height: 34px;
+      padding: 6px 10px;
+      font-size: 14px;
+    }
+
+    .rules-title {
       fill: #1d2433;
-      font-size: 22px;
+      font-size: 18px;
       font-weight: 900;
       text-anchor: middle;
     }
 
-    .svg-text {
+    .rules-box {
+      fill: #ffffff;
+      stroke: #9db2d7;
+      stroke-width: 2;
+      rx: 8;
+    }
+
+    .rules-box.teacher {
+      fill: #fff1f2;
+      stroke: #dc2626;
+    }
+
+    .rules-box.student {
+      fill: #eef7ff;
+      stroke: #2563eb;
+    }
+
+    .rules-box.data {
+      fill: #f4fce3;
+      stroke: #65a30d;
+    }
+
+    .rules-text {
       fill: #344054;
-      font-size: 14px;
+      font-size: 12px;
       font-weight: 800;
       text-anchor: middle;
       dominant-baseline: middle;
     }
 
-    .desk { fill: #d8a45f; stroke: #8a5a22; stroke-width: 2; rx: 8; }
-    .seat { fill: #eef2ff; stroke: #9aa8d7; stroke-width: 1.5; stroke-dasharray: 5 4; rx: 6; }
-    .teacher { fill: #f7d889; stroke: #16a34a; stroke-width: 2; rx: 8; }
-
-    footer {
-      margin-top: 18px;
-      color: var(--muted);
-      font-size: 14px;
+    .rules-arrow {
+      stroke: #667085;
+      stroke-width: 2;
+      marker-end: url(#rulesArrow);
     }
 
-    @media (max-width: 780px) {
-      .grid { grid-template-columns: 1fr; }
+    .legend {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .color-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .color-card {
+      display: grid;
+      grid-template-columns: 22px 1fr;
+      gap: 7px;
+      align-items: center;
+      min-width: 0;
+      color: #344054;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .rgb-row {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 6px;
+    }
+
+    .rgb-row input {
+      width: 100%;
+      min-height: 30px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 4px 6px;
+      font-size: 12px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .swatch {
+      width: 18px;
+      height: 18px;
+      border-radius: 4px;
+      border: 1px solid #98a2b3;
+    }
+
+    .data-box {
+      width: 100%;
+      min-height: 150px;
+      resize: vertical;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 10px;
+      font: 12px/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      color: #1f2937;
+      background: #fbfcff;
+    }
+
+    @media (max-width: 980px) {
+      header,
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      header {
+        align-items: start;
+      }
+
+      .brand {
+        white-space: normal;
+      }
     }
   </style>
 </head>
-<body>
-  <main>
+<body data-view="teacher">
+  <main class="app">
     <header>
-      <h1>Gemini 模仿菜練習：AI OCR Classroom</h1>
-      <p class="subtitle">這是給同學與 Gemini / Canva 類工具看的練習入口。這頁只提供任務、規格與限制，不直接提供完整答案。</p>
+      <div>
+        <h1>教室座位 SVG 配置工具</h1>
+        <p class="subtitle">v1.02｜固定 3x2 長桌、18 個學生座位與前方老師講台；預設載入 4 男 4 女英文範例，作為後續 OCR / Vision 位置辨識的 Ground Truth。</p>
+      </div>
+      <div class="brand">Falo X Force Cheng</div>
     </header>
 
-    <section class="card callout">
-      <p>教學重點：只有題目，和「題目 + 附加說明」，AI 產出的品質會不同。本練習刻意把答案與說明分開，避免 AI 一開始直接讀到完整實作。</p>
+    <section class="layout">
+      <section class="panel stage-panel">
+        <div class="toolbar">
+          <div class="button-row">
+            <button class="active" id="teacherViewBtn" type="button">老師視角（站前方看台下 / 可列印）</button>
+            <button id="studentViewBtn" type="button">學生視角（坐台下看前方）</button>
+            <button class="primary" id="saveBtn" type="button">儲存座位</button>
+            <button id="exportBtn" type="button">匯出 JSON</button>
+            <button id="importBtn" type="button">匯入覆蓋</button>
+            <button id="exportCsvBtn" type="button">匯出 Excel</button>
+            <button id="sampleGroupBtn" type="button">案例：載入範例團體</button>
+            <button id="resetBtn" class="danger" type="button">重設</button>
+          </div>
+          <div class="status" id="statusText" aria-live="polite"></div>
+        </div>
+        <div class="view-note" id="viewNote">老師視角：座位位置旋轉 180 度，但文字保持正向，站在前方看台下時可直接點名或列印。</div>
+        <div class="case-row" aria-label="工程模式案件">
+          <button type="button" data-case="teacher">案件：老師區域</button>
+          <button type="button" data-case="student">案件：學生座位</button>
+          <button type="button" data-case="swap">案件：交換座位</button>
+          <button type="button" data-case="data">案件：資料閉環</button>
+          <button type="button" data-case="clear">關閉註解</button>
+        </div>
+        <p class="hint">工程模式以學生視角為標準座標；點選案件會自動切到學生視角再顯示 SVG 註解圖層。</p>
+        <input id="importFile" type="file" accept=".json,.csv,.xls,.xml,text/csv,application/json,application/vnd.ms-excel,text/xml" hidden>
+
+        <div class="svg-wrap">
+            <svg id="classroomSvg" viewBox="0 0 960 700" role="img" aria-label="教室座位圖">
+            <defs>
+              <filter id="cardShadow" x="-20%" y="-20%" width="140%" height="140%">
+                <feDropShadow dx="0" dy="3" stdDeviation="2" flood-color="#101828" flood-opacity="0.22"></feDropShadow>
+              </filter>
+            </defs>
+
+            <g id="roomLayer">
+              <rect class="room-bg" x="0" y="0" width="960" height="700"></rect>
+              <rect class="front-zone" id="frontZone" x="42" y="28" width="876" height="150" rx="8"></rect>
+              <text class="label" id="frontLabel" x="480" y="56">教室前方 / 老師區</text>
+              <rect class="podium seat" id="seat-teacher" data-seat-id="teacher" data-seat-type="teacher" x="390" y="82" width="180" height="72" rx="8"></rect>
+              <text class="label" id="teacherSeatLabel" x="480" y="118">老師講台</text>
+
+              <text class="label" id="studentAreaLabel" x="480" y="214">學生長桌區：3 排 x 2 張長桌，每張桌子 3 個座位</text>
+
+              <g id="furnitureLayer"></g>
+              <g id="peopleLayer"></g>
+              <g id="caseOverlayLayer"></g>
+            </g>
+            </svg>
+        </div>
+      </section>
+
+      <aside class="side-panel">
+        <section class="panel">
+          <h2>姓名設定</h2>
+        <p class="hint">改名字會立即更新 SVG 色卡。姓名空白時人物會消失，座位仍保留。老師只能留在講台，學生只能放到學生座位。</p>
+          <div class="name-list" id="nameList"></div>
+        </section>
+
+        <section class="panel">
+          <h2>圖例</h2>
+          <div class="legend">
+            <div class="legend-item"><span class="swatch" style="background:#f8d5d3"></span>老師講台</div>
+            <div class="legend-item"><span class="swatch" style="background:#d8a45f"></span>固定長桌</div>
+            <div class="legend-item"><span class="swatch" style="background:#eef2ff"></span>可放座位</div>
+            <div class="legend-item"><span class="swatch" style="background:#dcfce7"></span>拖曳目標</div>
+          </div>
+        </section>
+
+        <div hidden>
+          <div id="colorGrid"></div>
+          <textarea id="dataBox" readonly></textarea>
+        </div>
+      </aside>
     </section>
-
-    <section class="grid">
-      <article class="card">
-        <h2>練習任務</h2>
-        <p>請做一個單檔 HTML 的教室座位 SVG 工具，讓老師可以管理固定長桌、學生座位、姓名、性別與匯入匯出資料。</p>
-        <ul>
-          <li>教室有 3 排 x 2 張長桌。</li>
-          <li>每張長桌有 3 個學生座位，總共 18 個學生座位。</li>
-          <li>老師在前方老師區，可以在老師區域內移動。</li>
-          <li>學生只能吸附到固定座位。</li>
-          <li>拖到已有人的座位時，兩位學生交換座位。</li>
-        </ul>
-      </article>
-
-      <article class="card">
-        <h2>畫面目標</h2>
-        <svg class="diagram" viewBox="0 0 520 320" role="img" aria-label="教室座位練習示意圖">
-          <text class="svg-title" x="260" y="32">教室座位示意</text>
-          <rect class="teacher" x="130" y="54" width="260" height="58"></rect>
-          <text class="svg-text" x="260" y="83">老師區：Force</text>
-          <g transform="translate(58 150)">
-            <rect class="desk" x="0" y="0" width="180" height="52"></rect>
-            <rect class="seat" x="8" y="8" width="48" height="36"></rect>
-            <rect class="seat" x="66" y="8" width="48" height="36"></rect>
-            <rect class="seat" x="124" y="8" width="48" height="36"></rect>
-            <rect class="desk" x="224" y="0" width="180" height="52"></rect>
-            <rect class="seat" x="232" y="8" width="48" height="36"></rect>
-            <rect class="seat" x="290" y="8" width="48" height="36"></rect>
-            <rect class="seat" x="348" y="8" width="48" height="36"></rect>
-          </g>
-          <g transform="translate(58 224)">
-            <rect class="desk" x="0" y="0" width="180" height="52"></rect>
-            <rect class="seat" x="8" y="8" width="48" height="36"></rect>
-            <rect class="seat" x="66" y="8" width="48" height="36"></rect>
-            <rect class="seat" x="124" y="8" width="48" height="36"></rect>
-            <rect class="desk" x="224" y="0" width="180" height="52"></rect>
-            <rect class="seat" x="232" y="8" width="48" height="36"></rect>
-            <rect class="seat" x="290" y="8" width="48" height="36"></rect>
-            <rect class="seat" x="348" y="8" width="48" height="36"></rect>
-          </g>
-        </svg>
-      </article>
-    </section>
-
-    <section class="grid">
-      <article class="card">
-        <h2>必要功能</h2>
-        <ol>
-          <li>用 SVG 畫固定桌子、座位、老師區與人物卡。</li>
-          <li>姓名空白時，人物卡不顯示，但座位仍存在。</li>
-          <li>學生可選男 / 女，小圓點用不同顏色表示。</li>
-          <li>老師小圓點固定綠色，不受男女選項影響。</li>
-          <li>支援 JSON / Excel 匯出匯入，匯入時全覆蓋。</li>
-          <li>工程模式案件要用學生視角，在圖上浮出 SVG 註解。</li>
-        </ol>
-      </article>
-
-      <article class="card">
-        <h2>範例團體治理</h2>
-        <p>新增一個「案例：載入範例團體」功能。</p>
-        <ul>
-          <li>範例團體是 8 位英文名學生。</li>
-          <li>男生 4 位、女生 4 位。</li>
-          <li>載入前需要密碼。</li>
-          <li>這是靜態頁面的教學級治理示範，不是後端權限控管。</li>
-        </ul>
-      </article>
-    </section>
-
-    <section class="card">
-      <h2>附加說明</h2>
-      <p>同學可以先只用本頁練習，再加入附加說明比較 AI 產出的差異。附加說明有 HTML 版與 Markdown 版，兩者內容對應。</p>
-      <div class="link-row">
-        <a class="button" href="./guide.html">閱讀 HTML 說明</a>
-        <a class="button secondary" href="./guide.md">閱讀 Markdown 說明</a>
-      </div>
-    </section>
-
-    <footer>Falo X Force Cheng v1.02 exercise entry. Reference implementation is intentionally not linked from this exercise page.</footer>
   </main>
+
+  <script>
+    const STORAGE_KEY = "falo_classroom_seat_map_v001";
+    const CARD = { width: 86, height: 46 };
+    const TEACHER_AREA = { x: 42, y: 28, width: 876, height: 150 };
+    const SVG_NS = "http://www.w3.org/2000/svg";
+    const DB_SHEETS = [
+      { name: "people", description: "人物資料表：姓名、角色、性別、色卡、座位或自由座標。" },
+      { name: "seats", description: "座位資料表：固定桌位與座位座標。" },
+      { name: "colors", description: "色卡資料表：OCR 用 RGB 色彩基準。" },
+      { name: "rules", description: "工程規則資料表：角色邊界、座標系與匯入規則。" },
+      { name: "views", description: "視角資料表：老師視角與學生視角定義。" }
+    ];
+    const SAMPLE_PASSWORD_HASH = "47620c7fbf06244327a816a649485c798d088eb3f88012e5bd5ed7ead83457bc";
+    const SAMPLE_GROUP = [
+      { id: "student-01", name: "Alex", gender: "male", seatId: "r1t1s1" },
+      { id: "student-02", name: "Bella", gender: "female", seatId: "r1t1s2" },
+      { id: "student-03", name: "Chris", gender: "male", seatId: "r1t1s3" },
+      { id: "student-04", name: "Diana", gender: "female", seatId: "r1t2s1" },
+      { id: "student-05", name: "Ethan", gender: "male", seatId: "r1t2s2" },
+      { id: "student-06", name: "Fiona", gender: "female", seatId: "r1t2s3" },
+      { id: "student-07", name: "George", gender: "male", seatId: "r2t1s1" },
+      { id: "student-08", name: "Hannah", gender: "female", seatId: "r2t1s2" }
+    ];
+
+    const colorPalette = [
+      { id: "color-01", role: "teacher", name: "老師色", hex: "#f7d889" },
+      { id: "color-02", role: "student", name: "學生座位色 1", hex: "#bfdbfe" },
+      { id: "color-03", role: "student", name: "學生座位色 2", hex: "#bbf7d0" },
+      { id: "color-04", role: "student", name: "學生座位色 3", hex: "#fde68a" },
+      { id: "color-05", role: "student", name: "學生座位色 4", hex: "#fbcfe8" },
+      { id: "color-06", role: "student", name: "學生座位色 5", hex: "#ddd6fe" },
+      { id: "color-07", role: "student", name: "學生座位色 6", hex: "#fed7aa" },
+      { id: "color-08", role: "student", name: "學生座位色 7", hex: "#a7f3d0" },
+      { id: "color-09", role: "student", name: "學生座位色 8", hex: "#c7d2fe" },
+      { id: "color-10", role: "student", name: "學生座位色 9", hex: "#fecdd3" },
+      { id: "color-11", role: "student", name: "保留色 10", hex: "#bae6fd" },
+      { id: "color-12", role: "student", name: "保留色 11", hex: "#d9f99d" },
+      { id: "color-13", role: "student", name: "保留色 12", hex: "#fef08a" },
+      { id: "color-14", role: "student", name: "保留色 13", hex: "#f0abfc" },
+      { id: "color-15", role: "student", name: "保留色 14", hex: "#a5b4fc" },
+      { id: "color-16", role: "student", name: "保留色 15", hex: "#fdba74" },
+      { id: "color-17", role: "student", name: "保留色 16", hex: "#99f6e4" },
+      { id: "color-18", role: "student", name: "保留色 17", hex: "#fca5a5" },
+      { id: "color-19", role: "student", name: "保留色 18", hex: "#e5e7eb" }
+    ];
+
+    const defaultPeople = [
+      { id: "teacher-force", role: "teacher", label: "老師", name: "Force", gender: "", colorId: "color-01", color: colorPalette[0].hex, seatId: null, x: 437, y: 95 },
+      { id: "student-01", role: "student", label: "學生1", name: "Alex", gender: "male", colorId: "color-02", color: colorPalette[1].hex, seatId: "r1t1s1" },
+      { id: "student-02", role: "student", label: "學生2", name: "Bella", gender: "female", colorId: "color-03", color: colorPalette[2].hex, seatId: "r1t1s2" },
+      { id: "student-03", role: "student", label: "學生3", name: "Chris", gender: "male", colorId: "color-04", color: colorPalette[3].hex, seatId: "r1t1s3" },
+      { id: "student-04", role: "student", label: "學生4", name: "Diana", gender: "female", colorId: "color-05", color: colorPalette[4].hex, seatId: "r1t2s1" },
+      { id: "student-05", role: "student", label: "學生5", name: "Ethan", gender: "male", colorId: "color-06", color: colorPalette[5].hex, seatId: "r1t2s2" },
+      { id: "student-06", role: "student", label: "學生6", name: "Fiona", gender: "female", colorId: "color-07", color: colorPalette[6].hex, seatId: "r1t2s3" },
+      { id: "student-07", role: "student", label: "學生7", name: "George", gender: "male", colorId: "color-08", color: colorPalette[7].hex, seatId: "r2t1s1" },
+      { id: "student-08", role: "student", label: "學生8", name: "Hannah", gender: "female", colorId: "color-09", color: colorPalette[8].hex, seatId: "r2t1s2" },
+      { id: "student-09", role: "student", label: "學生9", name: "", gender: "", colorId: "color-10", color: colorPalette[9].hex, seatId: "r2t1s3" },
+      { id: "student-10", role: "student", label: "學生10", name: "", gender: "", colorId: "color-11", color: colorPalette[10].hex, seatId: "r2t2s1" },
+      { id: "student-11", role: "student", label: "學生11", name: "", gender: "", colorId: "color-12", color: colorPalette[11].hex, seatId: "r2t2s2" },
+      { id: "student-12", role: "student", label: "學生12", name: "", gender: "", colorId: "color-13", color: colorPalette[12].hex, seatId: "r2t2s3" },
+      { id: "student-13", role: "student", label: "學生13", name: "", gender: "", colorId: "color-14", color: colorPalette[13].hex, seatId: "r3t1s1" },
+      { id: "student-14", role: "student", label: "學生14", name: "", gender: "", colorId: "color-15", color: colorPalette[14].hex, seatId: "r3t1s2" },
+      { id: "student-15", role: "student", label: "學生15", name: "", gender: "", colorId: "color-16", color: colorPalette[15].hex, seatId: "r3t1s3" },
+      { id: "student-16", role: "student", label: "學生16", name: "", gender: "", colorId: "color-17", color: colorPalette[16].hex, seatId: "r3t2s1" },
+      { id: "student-17", role: "student", label: "學生17", name: "", gender: "", colorId: "color-18", color: colorPalette[17].hex, seatId: "r3t2s2" },
+      { id: "student-18", role: "student", label: "學生18", name: "", gender: "", colorId: "color-19", color: colorPalette[18].hex, seatId: "r3t2s3" }
+    ];
+
+    const state = {
+      people: structuredClone(defaultPeople),
+      seats: []
+    };
+
+    const svg = document.getElementById("classroomSvg");
+    const roomLayer = document.getElementById("roomLayer");
+    const frontZone = document.getElementById("frontZone");
+    const frontLabel = document.getElementById("frontLabel");
+    const teacherSeatLabel = document.getElementById("teacherSeatLabel");
+    const studentAreaLabel = document.getElementById("studentAreaLabel");
+    const furnitureLayer = document.getElementById("furnitureLayer");
+    const peopleLayer = document.getElementById("peopleLayer");
+    const caseOverlayLayer = document.getElementById("caseOverlayLayer");
+    const nameList = document.getElementById("nameList");
+    const colorGrid = document.getElementById("colorGrid");
+    const dataBox = document.getElementById("dataBox");
+    const statusText = document.getElementById("statusText");
+    const teacherViewBtn = document.getElementById("teacherViewBtn");
+    const studentViewBtn = document.getElementById("studentViewBtn");
+    const viewNote = document.getElementById("viewNote");
+    const importFile = document.getElementById("importFile");
+    const rulesPanel = document.getElementById("rulesPanel");
+    let activeDrag = null;
+
+    function createSvgElement(tag, attrs = {}) {
+      const element = document.createElementNS(SVG_NS, tag);
+      Object.entries(attrs).forEach(([key, value]) => {
+        element.setAttribute(key, value);
+      });
+      return element;
+    }
+
+    function showCaseOverlay(caseId) {
+      caseOverlayLayer.replaceChildren();
+      if (caseId === "clear") return;
+      if (!isTeacherView()) {
+        viewNote.textContent = "工程模式：以學生視角作為標準座標，圖上註解可用來說明資料規則。";
+      }
+
+      const group = createSvgElement("g", { "data-case": caseId });
+      const overlay = createSvgElement("rect", {
+        x: 18,
+        y: 18,
+        width: 924,
+        height: 664,
+        fill: "rgba(15, 23, 42, 0.08)",
+        stroke: "#2563eb",
+        "stroke-width": 2,
+        rx: 10
+      });
+      group.appendChild(overlay);
+
+      const cases = {
+        teacher: {
+          box: [70, 44, 820, 116],
+          note: ["老師 = 圖形座標系", "可在老師區域內自由移動", "不能拖到學生桌區"],
+          noteAt: [610, 190]
+        },
+        student: {
+          box: [120, 240, 720, 360],
+          note: ["學生 = 座位絕對座標系", "資料只記錄 seatId", "桌子與座位本身不可移動"],
+          noteAt: [610, 120]
+        },
+        swap: {
+          box: [120, 240, 720, 360],
+          note: ["交換規則", "拖到已有人座位時", "兩位學生交換 seatId"],
+          noteAt: [88, 118]
+        },
+        data: {
+          box: [42, 28, 876, 610],
+          note: ["資料閉環", "匯出 JSON / Excel", "匯入後全覆蓋並重新驗證"],
+          noteAt: [560, 92]
+        }
+      };
+
+      const config = cases[caseId];
+      if (!config) return;
+      const [x, y, width, height] = config.box;
+      group.appendChild(createSvgElement("rect", {
+        x,
+        y,
+        width,
+        height,
+        fill: "none",
+        stroke: "#dc2626",
+        "stroke-width": 4,
+        "stroke-dasharray": "10 6",
+        rx: 12
+      }));
+
+      const [noteX, noteY] = config.noteAt;
+      group.appendChild(createSvgElement("rect", {
+        x: noteX,
+        y: noteY,
+        width: 270,
+        height: 96,
+        fill: "#ffffff",
+        stroke: "#1d4ed8",
+        "stroke-width": 2,
+        rx: 8,
+        filter: "url(#cardShadow)"
+      }));
+      config.note.forEach((line, index) => {
+        group.appendChild(createSvgElement("text", {
+          class: "label",
+          x: noteX + 135,
+          y: noteY + 26 + index * 26
+        })).textContent = line;
+      });
+
+      group.appendChild(createSvgElement("line", {
+        x1: noteX + 135,
+        y1: noteY + 96,
+        x2: x + width / 2,
+        y2: y + height / 2,
+        stroke: "#1d4ed8",
+        "stroke-width": 3,
+        "stroke-dasharray": "8 5"
+      }));
+
+      caseOverlayLayer.appendChild(group);
+    }
+
+    function buildSeatModel() {
+      const seats = [{ id: "teacher", type: "teacher", tableId: "podium", x: 480, y: 118 }];
+      const startX = 138;
+      const tableGapX = 356;
+      const startY = 260;
+      const rowGapY = 132;
+      const tableWidth = 270;
+      const tableHeight = 72;
+      const seatWidth = tableWidth / 3;
+
+      for (let row = 1; row <= 3; row += 1) {
+        for (let table = 1; table <= 2; table += 1) {
+          const tableX = startX + (table - 1) * tableGapX;
+          const tableY = startY + (row - 1) * rowGapY;
+          for (let seat = 1; seat <= 3; seat += 1) {
+            seats.push({
+              id: `r${row}t${table}s${seat}`,
+              type: "student",
+              tableId: `r${row}t${table}`,
+              row,
+              table,
+              seat,
+              x: tableX + seatWidth * (seat - 0.5),
+              y: tableY + tableHeight / 2
+            });
+          }
+        }
+      }
+      state.seats = seats;
+    }
+
+    function isTeacherView() {
+      return document.body.dataset.view === "teacher";
+    }
+
+    function displayX(x) {
+      return isTeacherView() ? 960 - x : x;
+    }
+
+    function displayY(y) {
+      return isTeacherView() ? 700 - y : y;
+    }
+
+    function displayRectX(x, width) {
+      return isTeacherView() ? 960 - x - width : x;
+    }
+
+    function displayRectY(y, height) {
+      return isTeacherView() ? 700 - y - height : y;
+    }
+
+    function getDisplaySeat(seat) {
+      return { ...seat, x: displayX(seat.x), y: displayY(seat.y) };
+    }
+
+    function displayTopLeftFromModel(x, y, width, height) {
+      return {
+        x: displayRectX(x, width),
+        y: displayRectY(y, height)
+      };
+    }
+
+    function modelTopLeftFromDisplay(x, y, width, height) {
+      return {
+        x: isTeacherView() ? 960 - x - width : x,
+        y: isTeacherView() ? 700 - y - height : y
+      };
+    }
+
+    function getTeacherDisplayBounds() {
+      return {
+        x: displayRectX(TEACHER_AREA.x, TEACHER_AREA.width),
+        y: displayRectY(TEACHER_AREA.y, TEACHER_AREA.height),
+        width: TEACHER_AREA.width,
+        height: TEACHER_AREA.height
+      };
+    }
+
+    function drawStaticRoom() {
+      frontZone.setAttribute("y", displayRectY(TEACHER_AREA.y, TEACHER_AREA.height));
+      frontLabel.setAttribute("y", displayY(56));
+      document.getElementById("seat-teacher").setAttribute("y", displayRectY(82, 72));
+      teacherSeatLabel.setAttribute("y", displayY(118));
+      studentAreaLabel.setAttribute("y", displayY(214));
+    }
+
+    function drawFurniture() {
+      furnitureLayer.replaceChildren();
+      const startX = 138;
+      const tableGapX = 356;
+      const startY = 260;
+      const rowGapY = 132;
+      const tableWidth = 270;
+      const tableHeight = 72;
+      const seatWidth = tableWidth / 3;
+
+      for (let row = 1; row <= 3; row += 1) {
+        for (let table = 1; table <= 2; table += 1) {
+          const tableX = startX + (table - 1) * tableGapX;
+          const displayTableX = displayRectX(tableX, tableWidth);
+          const tableY = startY + (row - 1) * rowGapY;
+          const displayTableY = displayRectY(tableY, tableHeight);
+          const tableId = `r${row}t${table}`;
+          const tableGroup = createSvgElement("g", { "data-table-id": tableId });
+
+          tableGroup.appendChild(createSvgElement("rect", {
+            class: "table",
+            x: displayTableX,
+            y: displayTableY,
+            width: tableWidth,
+            height: tableHeight,
+            rx: 8
+          }));
+
+          tableGroup.appendChild(createSvgElement("text", {
+            class: "small-label",
+            x: displayTableX + tableWidth / 2,
+            y: isTeacherView() ? displayTableY + tableHeight + 18 : tableY - 16
+          })).textContent = `第 ${row} 排 / 第 ${table} 張長桌`;
+
+          for (let seat = 1; seat <= 3; seat += 1) {
+            const seatId = `r${row}t${table}s${seat}`;
+            const x = tableX + seatWidth * (seat - 1) + 5;
+            const displaySeatX = displayRectX(x, seatWidth - 10);
+            const displaySeatY = displayRectY(tableY + 8, tableHeight - 16);
+            const seatRect = createSvgElement("rect", {
+              class: "seat",
+              id: `seat-${seatId}`,
+              "data-seat-id": seatId,
+              "data-seat-type": "student",
+              x: displaySeatX,
+              y: displaySeatY,
+              width: seatWidth - 10,
+              height: tableHeight - 16,
+              rx: 6
+            });
+            tableGroup.appendChild(seatRect);
+
+            tableGroup.appendChild(createSvgElement("text", {
+              class: "small-label",
+              x: displaySeatX + (seatWidth - 10) / 2,
+              y: isTeacherView() ? displayTableY - 16 : tableY + tableHeight + 18
+            })).textContent = `座位 ${seat}`;
+          }
+
+          furnitureLayer.appendChild(tableGroup);
+        }
+      }
+    }
+
+    function getSeat(seatId) {
+      return state.seats.find((seat) => seat.id === seatId);
+    }
+
+    function getPersonPosition(person) {
+      if (person.role === "teacher" && person.x !== undefined && person.y !== undefined) {
+        return displayTopLeftFromModel(person.x, person.y, CARD.width, CARD.height);
+      }
+      const seat = getSeat(person.seatId);
+      if (seat) {
+        const displaySeat = getDisplaySeat(seat);
+        return {
+          x: displaySeat.x - CARD.width / 2,
+          y: displaySeat.y - CARD.height / 2
+        };
+      }
+      return { x: person.x ?? 40, y: person.y ?? 610 };
+    }
+
+    function drawPeople() {
+      peopleLayer.replaceChildren();
+      state.people.filter(isVisiblePerson).forEach((person) => {
+        const position = getPersonPosition(person);
+        const group = createSvgElement("g", {
+          class: "person",
+          id: person.id,
+          "data-person-id": person.id,
+          transform: `translate(${position.x}, ${position.y})`
+        });
+
+        group.appendChild(createSvgElement("rect", {
+          class: "person-card",
+          x: 0,
+          y: 0,
+          width: CARD.width,
+          height: CARD.height,
+          fill: person.color
+        }));
+
+        group.appendChild(createSvgElement("circle", {
+          cx: 17,
+          cy: 16,
+          r: 9,
+          fill: getGenderDotColor(person),
+          opacity: 0.9
+        }));
+
+        group.appendChild(createSvgElement("text", {
+          class: "person-role",
+          x: CARD.width / 2,
+          y: 12
+        })).textContent = person.label;
+
+        group.appendChild(createSvgElement("text", {
+          class: "person-name",
+          x: CARD.width / 2,
+          y: 30
+        })).textContent = person.name;
+
+        group.addEventListener("pointerdown", startDrag);
+        peopleLayer.appendChild(group);
+      });
+    }
+
+    function renderNameInputs() {
+      nameList.replaceChildren();
+      state.people.forEach((person) => {
+        const row = document.createElement("div");
+        row.className = "name-row";
+
+        const label = document.createElement("label");
+        label.htmlFor = `input-${person.id}`;
+        label.textContent = person.label;
+
+        const input = document.createElement("input");
+        input.id = `input-${person.id}`;
+        input.value = person.name;
+        input.autocomplete = "off";
+        input.addEventListener("input", () => {
+          person.name = input.value.trim();
+          drawPeople();
+          updateDataBox();
+        });
+
+        const genderSelect = document.createElement("select");
+        genderSelect.setAttribute("aria-label", `${person.label} 性別`);
+        genderSelect.innerHTML = `
+          <option value="">未選</option>
+          <option value="male">男</option>
+          <option value="female">女</option>
+        `;
+        genderSelect.value = person.gender || "";
+        if (person.role === "teacher") {
+          genderSelect.disabled = true;
+        }
+        genderSelect.addEventListener("change", () => {
+          person.gender = genderSelect.value;
+          drawPeople();
+          updateDataBox();
+        });
+
+        row.append(label, input, genderSelect);
+        nameList.appendChild(row);
+      });
+    }
+
+    function getGenderDotColor(person) {
+      if (person.role === "teacher") return "#16a34a";
+      if (person.gender === "male") return "#2563eb";
+      if (person.gender === "female") return "#db2777";
+      return "#64748b";
+    }
+
+    function renderColorGrid() {
+      colorGrid.replaceChildren();
+      colorPalette.forEach((color) => {
+        const item = document.createElement("div");
+        item.className = "color-card";
+
+        const swatch = document.createElement("span");
+        swatch.className = "swatch";
+        swatch.style.background = color.hex;
+
+        const label = document.createElement("span");
+        label.textContent = `${color.id} ${color.hex}`;
+
+        const rgb = hexToRgb(color.hex);
+        const rgbRow = document.createElement("div");
+        rgbRow.className = "rgb-row";
+        ["r", "g", "b"].forEach((channel) => {
+          const input = document.createElement("input");
+          input.type = "number";
+          input.min = "0";
+          input.max = "255";
+          input.value = rgb[channel];
+          input.setAttribute("aria-label", `${color.id} ${channel.toUpperCase()}`);
+          input.addEventListener("change", () => {
+            rgb[channel] = clamp(Number(input.value) || 0, 0, 255);
+            color.hex = rgbToHex(rgb.r, rgb.g, rgb.b);
+            updatePeopleColors();
+            renderColorGrid();
+            drawPeople();
+            updateDataBox();
+            saveState(false);
+          });
+          rgbRow.appendChild(input);
+        });
+
+        item.append(swatch, label, rgbRow);
+        colorGrid.appendChild(item);
+      });
+    }
+
+    function updatePeopleColors() {
+      state.people.forEach((person) => {
+        const color = colorPalette.find((item) => item.id === person.colorId);
+        if (color) person.color = color.hex;
+      });
+    }
+
+    function hexToRgb(hex) {
+      const value = hex.replace("#", "");
+      return {
+        r: parseInt(value.slice(0, 2), 16),
+        g: parseInt(value.slice(2, 4), 16),
+        b: parseInt(value.slice(4, 6), 16)
+      };
+    }
+
+    function rgbToHex(r, g, b) {
+      return `#${[r, g, b].map((value) => clamp(Math.round(value), 0, 255).toString(16).padStart(2, "0")).join("")}`;
+    }
+
+    function startDrag(event) {
+      const group = event.currentTarget;
+      const personId = group.dataset.personId;
+      const person = state.people.find((item) => item.id === personId);
+      const point = toRoomPoint(event);
+      const current = getPersonPosition(person);
+
+      activeDrag = {
+        person,
+        group,
+        originalSeatId: person.seatId,
+        originalX: person.x,
+        originalY: person.y,
+        offsetX: point.x - current.x,
+        offsetY: point.y - current.y
+      };
+
+      group.classList.add("is-dragging");
+      group.setPointerCapture(event.pointerId);
+      group.addEventListener("pointermove", moveDrag);
+      group.addEventListener("pointerup", endDrag);
+      group.addEventListener("pointercancel", endDrag);
+    }
+
+    function moveDrag(event) {
+      if (!activeDrag) return;
+      const point = toRoomPoint(event);
+      let x = point.x - activeDrag.offsetX;
+      let y = point.y - activeDrag.offsetY;
+      if (activeDrag.person.role === "teacher") {
+        const bounds = getTeacherDisplayBounds();
+        x = clamp(x, bounds.x, bounds.x + bounds.width - CARD.width);
+        y = clamp(y, bounds.y, bounds.y + bounds.height - CARD.height);
+      } else {
+        x = clamp(x, 8, 960 - CARD.width - 8);
+        y = clamp(y, 8, 700 - CARD.height - 8);
+      }
+      activeDrag.group.setAttribute("transform", `translate(${x}, ${y})`);
+      const modelPoint = modelTopLeftFromDisplay(x, y, CARD.width, CARD.height);
+      activeDrag.person.seatId = null;
+      activeDrag.person.x = Math.round(modelPoint.x);
+      activeDrag.person.y = Math.round(modelPoint.y);
+      if (activeDrag.person.role === "teacher") {
+        clearSeatHighlights();
+      } else {
+        highlightNearestSeat(x + CARD.width / 2, y + CARD.height / 2, activeDrag.person.role);
+      }
+    }
+
+    function endDrag(event) {
+      if (!activeDrag) return;
+      const point = toRoomPoint(event);
+      const nearest = activeDrag.person.role === "teacher" ? null : findNearestSeat(point.x, point.y, activeDrag.person.role);
+      if (activeDrag.person.role === "teacher") {
+        activeDrag.person.seatId = null;
+      } else if (nearest) {
+        movePersonToSeat(activeDrag.person, nearest.id, activeDrag);
+      }
+      activeDrag.group.classList.remove("is-dragging");
+      activeDrag.group.releasePointerCapture(event.pointerId);
+      activeDrag.group.removeEventListener("pointermove", moveDrag);
+      activeDrag.group.removeEventListener("pointerup", endDrag);
+      activeDrag.group.removeEventListener("pointercancel", endDrag);
+      activeDrag = null;
+      clearSeatHighlights();
+      drawPeople();
+      updateDataBox();
+    }
+
+    function toRoomPoint(event) {
+      const point = svg.createSVGPoint();
+      point.x = event.clientX;
+      point.y = event.clientY;
+      return point.matrixTransform(svg.getScreenCTM().inverse());
+    }
+
+    function clamp(value, min, max) {
+      return Math.max(min, Math.min(max, value));
+    }
+
+    function findNearestSeat(x, y, role) {
+      const allowedType = role === "teacher" ? "teacher" : "student";
+      let best = null;
+      let bestDistance = Infinity;
+      state.seats
+        .filter((seat) => seat.type === allowedType)
+        .forEach((seat) => {
+          const displaySeat = getDisplaySeat(seat);
+          const distance = Math.hypot(displaySeat.x - x, displaySeat.y - y);
+          if (distance < bestDistance) {
+            bestDistance = distance;
+            best = seat;
+          }
+        });
+      return bestDistance <= 92 ? best : null;
+    }
+
+    function isVisiblePerson(person) {
+      return Boolean(String(person.name || "").trim());
+    }
+
+    function findVisiblePersonAtSeat(seatId, excludeId = null) {
+      return state.people.find((person) => {
+        return person.id !== excludeId && person.seatId === seatId && isVisiblePerson(person);
+      });
+    }
+
+    function movePersonToSeat(person, seatId, dragState) {
+      const occupant = findVisiblePersonAtSeat(seatId, person.id);
+      if (occupant) {
+        occupant.seatId = dragState.originalSeatId || null;
+        if (!dragState.originalSeatId) {
+          occupant.x = dragState.originalX ?? 40;
+          occupant.y = dragState.originalY ?? 610;
+        } else {
+          delete occupant.x;
+          delete occupant.y;
+        }
+      }
+      person.seatId = seatId;
+      delete person.x;
+      delete person.y;
+    }
+
+    function highlightNearestSeat(x, y, role) {
+      clearSeatHighlights();
+      const nearest = findNearestSeat(x, y, role);
+      if (!nearest) return;
+      const rect = document.getElementById(`seat-${nearest.id}`);
+      if (rect) rect.classList.add("is-target");
+    }
+
+    function clearSeatHighlights() {
+      document.querySelectorAll(".seat.is-target").forEach((seat) => {
+        seat.classList.remove("is-target");
+      });
+    }
+
+    function getExportData() {
+      return {
+        version: "classroom-seat-map-v1.02",
+        room: {
+          teacherArea: "front",
+          fixedTables: "3 rows x 2 long tables",
+          seatsPerTable: 3,
+          studentSeatCapacity: 18,
+          activeStudentCards: state.people.filter((person) => person.role === "student" && isVisiblePerson(person)).length,
+          stableOcrColors: 19,
+          views: ["teacher", "student"],
+          viewDefinitions: {
+            teacher: "座位位置旋轉 180 度，但文字保持正向；站在教室前方看台下時，方向符合老師本人視角，適合列印點名。",
+            student: "坐在學生座位看講台，左右方向符合學生或投影視角，也是工程模式註解的標準座標。"
+          },
+          roleBoundaries: getRuleRows().filter((rule) => rule.category === "role_boundary"),
+          coordinateSystems: getRuleRows().filter((rule) => rule.category === "coordinate_system"),
+          futureSyncTargets: ["local_server", "lan_server", "gas_cloud"]
+        },
+        sampleGroupPolicy: {
+          version: "v1.02",
+          defaultGroup: "4 male + 4 female English sample names",
+          passwordGate: "SHA-256 hash check in browser, teaching-grade governance gate for static GitHub Pages."
+        },
+        database: {
+          sheetDesign: DB_SHEETS,
+          tables: {
+            people: getPeopleRows(),
+            seats: state.seats,
+            colors: getColorRows(),
+            rules: getRuleRows(),
+            views: getViewRows()
+          }
+        },
+        colorPalette: getColorRows(),
+        people: getPeopleRows(),
+        seats: state.seats
+      };
+    }
+
+    function getPeopleRows() {
+      return state.people.map((person) => ({
+        id: person.id,
+        role: person.role,
+        label: person.label,
+        name: person.name,
+        gender: person.gender || "",
+        genderDotColor: getGenderDotColor(person),
+        colorId: person.colorId,
+        color: person.color,
+        seatId: person.seatId,
+        freePosition: person.seatId ? null : { x: person.x ?? null, y: person.y ?? null }
+      }));
+    }
+
+    function getRuleRows() {
+      return [
+        { id: "rule-01", category: "coordinate_system", target: "teacher", rule: "圖形座標系：記錄老師卡在老師區域內的 x/y 位置。" },
+        { id: "rule-02", category: "coordinate_system", target: "student", rule: "座位絕對座標系：記錄學生對應到哪一個固定 seatId。" },
+        { id: "rule-03", category: "role_boundary", target: "teacher", rule: "老師只能在老師區域內自由定位，不能移到學生區。" },
+        { id: "rule-04", category: "role_boundary", target: "student", rule: "學生只能吸附學生座位。" },
+        { id: "rule-05", category: "visibility", target: "person", rule: "姓名空白時人物卡不顯示，但座位與色卡資料保留。" },
+        { id: "rule-06", category: "drag", target: "student", rule: "學生拖到已有人的座位時，兩位交換 seatId。" },
+        { id: "rule-07", category: "import", target: "database", rule: "JSON/CSV 匯入採全覆蓋，並重新檢查重疊座位。" },
+        { id: "rule-08", category: "future", target: "ocr", rule: "進階版可把 OCR 辨識結果轉成同一份 people/seats 資料後回灌。" },
+        { id: "rule-09", category: "governance", target: "sample_group", rule: "載入範例團體需通過密碼雜湊檢查；靜態頁僅作教學級治理示範。" }
+      ];
+    }
+
+    function getColorRows() {
+      return colorPalette.map((color) => {
+        const rgb = hexToRgb(color.hex);
+        return {
+          id: color.id,
+          role: color.role,
+          name: color.name,
+          hex: color.hex,
+          r: rgb.r,
+          g: rgb.g,
+          b: rgb.b
+        };
+      });
+    }
+
+    function getViewRows() {
+      return [
+        { id: "teacher", name: "老師視角", description: "座位位置旋轉 180 度，但文字保持正向，適合站在前方點名或列印。" },
+        { id: "student", name: "學生視角", description: "坐在學生座位看講台，左右方向符合學生或投影視角。" }
+      ];
+    }
+
+    function updateDataBox() {
+      dataBox.value = JSON.stringify(getExportData(), null, 2);
+    }
+
+    function saveState(showMessage = true) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        people: state.people,
+        colors: getColorRows()
+      }));
+      updateDataBox();
+      if (showMessage) showStatus("已儲存到瀏覽器本機。");
+    }
+
+    function loadState() {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      try {
+        const saved = JSON.parse(raw);
+        if (Array.isArray(saved.colors)) {
+          overwriteColors(saved.colors);
+        }
+        if (Array.isArray(saved.people)) {
+          state.people = defaultPeople.map((defaultPerson) => {
+            const savedPerson = saved.people.find((item) => item.id === defaultPerson.id);
+            if (!savedPerson) return defaultPerson;
+            const mergedPerson = { ...defaultPerson, ...savedPerson };
+            if (mergedPerson.id === "student-09" && mergedPerson.name === "學生9") {
+              mergedPerson.name = "謝總";
+            }
+            if (mergedPerson.role === "teacher" && mergedPerson.seatId === "teacher") {
+              mergedPerson.seatId = null;
+              mergedPerson.x = mergedPerson.x ?? 437;
+              mergedPerson.y = mergedPerson.y ?? 95;
+            }
+            if (/^student-(1[0-8])$/.test(mergedPerson.id) && mergedPerson.name === mergedPerson.label) {
+              mergedPerson.name = "";
+            }
+            if (!["male", "female"].includes(mergedPerson.gender)) {
+              mergedPerson.gender = "";
+            }
+            return mergedPerson;
+          });
+          normalizeSeatAssignments();
+          updatePeopleColors();
+        }
+      } catch {
+        showStatus("讀取舊資料失敗，已使用預設座位。", true);
+      }
+    }
+
+    function resetState() {
+      localStorage.removeItem(STORAGE_KEY);
+      state.people = structuredClone(defaultPeople);
+      renderAll();
+      showStatus("已重設為預設座位。");
+    }
+
+    function exportJson() {
+      const blob = new Blob([JSON.stringify(getExportData(), null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = `classroom-seat-map-${new Date().toISOString().replaceAll(":", "-")}.json`;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      URL.revokeObjectURL(url);
+      showStatus("已匯出 JSON。");
+    }
+
+    async function loadSampleGroupWithPassword() {
+      const password = window.prompt("請輸入範例團體載入密碼");
+      if (password === null) return;
+      const passwordHash = await sha256(password);
+      if (passwordHash !== SAMPLE_PASSWORD_HASH) {
+        showStatus("密碼錯誤，未載入範例團體。", true);
+        return;
+      }
+      loadSampleGroup();
+      saveState(false);
+      renderAll();
+      showStatus("已載入 v1.02 英文範例團體：4 男 4 女。");
+    }
+
+    async function sha256(text) {
+      const bytes = new TextEncoder().encode(text);
+      const digest = await crypto.subtle.digest("SHA-256", bytes);
+      return [...new Uint8Array(digest)]
+        .map((byte) => byte.toString(16).padStart(2, "0"))
+        .join("");
+    }
+
+    function loadSampleGroup() {
+      const sampleById = new Map(SAMPLE_GROUP.map((person) => [person.id, person]));
+      state.people = defaultPeople.map((defaultPerson) => {
+        const nextPerson = structuredClone(defaultPerson);
+        if (nextPerson.role !== "student") return nextPerson;
+        const sample = sampleById.get(nextPerson.id);
+        if (!sample) {
+          nextPerson.name = "";
+          nextPerson.gender = "";
+          return nextPerson;
+        }
+        nextPerson.name = sample.name;
+        nextPerson.gender = sample.gender;
+        nextPerson.seatId = sample.seatId;
+        delete nextPerson.x;
+        delete nextPerson.y;
+        return nextPerson;
+      });
+      normalizeSeatAssignments();
+      updatePeopleColors();
+      setView("student");
+      showCaseOverlay("data");
+    }
+
+    function exportCsv() {
+      const workbook = buildExcelWorkbook();
+      downloadTextFile(`classroom-seat-map-${new Date().toISOString().replaceAll(":", "-")}.xls`, workbook, "application/vnd.ms-excel;charset=utf-8");
+      showStatus("已匯出多工作表 Excel。");
+    }
+
+    function buildExcelWorkbook() {
+      const sheets = {
+        people: getPeopleRows().map((person) => ({
+          id: person.id,
+          role: person.role,
+          label: person.label,
+          name: person.name,
+          gender: person.gender,
+          genderDotColor: person.genderDotColor,
+          colorId: person.colorId,
+          color: person.color,
+          seatId: person.seatId || "",
+          x: person.freePosition?.x ?? "",
+          y: person.freePosition?.y ?? ""
+        })),
+        seats: state.seats,
+        colors: getColorRows(),
+        rules: getRuleRows(),
+        views: getViewRows()
+      };
+
+      const worksheets = DB_SHEETS.map((sheet) => {
+        const rows = sheets[sheet.name] || [];
+        const headers = Object.keys(rows[0] || { id: "", description: "" });
+        return `
+          <Worksheet ss:Name="${xmlEscape(sheet.name)}">
+            <Table>
+              ${buildExcelRow(headers)}
+              ${rows.map((row) => buildExcelRow(headers.map((header) => row[header] ?? ""))).join("")}
+            </Table>
+          </Worksheet>
+        `;
+      }).join("");
+
+      return `<?xml version="1.0"?>
+        <?mso-application progid="Excel.Sheet"?>
+        <Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
+          xmlns:o="urn:schemas-microsoft-com:office:office"
+          xmlns:x="urn:schemas-microsoft-com:office:excel"
+          xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">
+          ${worksheets}
+        </Workbook>`;
+    }
+
+    function buildExcelRow(values) {
+      return `<Row>${values.map((value) => `<Cell><Data ss:Type="String">${xmlEscape(value)}</Data></Cell>`).join("")}</Row>`;
+    }
+
+    function xmlEscape(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;");
+    }
+
+    function csvEscape(value) {
+      const text = String(value ?? "");
+      if (/[",\n]/.test(text)) {
+        return `"${text.replaceAll('"', '""')}"`;
+      }
+      return text;
+    }
+
+    function downloadTextFile(filename, content, type) {
+      const blob = new Blob([content], { type });
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = filename;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    function importOverwrite(file) {
+      const reader = new FileReader();
+      reader.addEventListener("load", () => {
+        try {
+          const text = String(reader.result || "");
+          const fileName = file.name.toLowerCase();
+          const imported = fileName.endsWith(".json")
+            ? parseDatabaseFromJson(text)
+            : (fileName.endsWith(".xls") || fileName.endsWith(".xml"))
+              ? parseDatabaseFromExcelXml(text)
+              : { people: parsePeopleFromCsv(text), colors: [] };
+          overwriteColors(imported.colors || []);
+          overwritePeople(imported.people || []);
+          normalizeSeatAssignments();
+          updatePeopleColors();
+          saveState(false);
+          renderAll();
+          showStatus("已匯入並全覆蓋目前資料庫。");
+        } catch (error) {
+          showStatus(`匯入失敗：${error.message}`, true);
+        } finally {
+          importFile.value = "";
+        }
+      });
+      reader.readAsText(file);
+    }
+
+    function parseDatabaseFromJson(text) {
+      const data = JSON.parse(text);
+      const people = Array.isArray(data)
+        ? data
+        : data.database?.tables?.people || data.people;
+      if (!Array.isArray(people)) {
+        throw new Error("JSON 需要包含 people 陣列。");
+      }
+      return {
+        people,
+        colors: data.database?.tables?.colors || data.colorPalette || data.colors || []
+      };
+    }
+
+    function parseDatabaseFromExcelXml(text) {
+      const doc = new DOMParser().parseFromString(text, "text/xml");
+      const parserError = doc.querySelector("parsererror");
+      if (parserError) throw new Error("Excel XML 格式無法讀取。");
+      return {
+        people: readWorksheetRows(doc, "people"),
+        colors: readWorksheetRows(doc, "colors")
+      };
+    }
+
+    function readWorksheetRows(doc, sheetName) {
+      const worksheets = [...doc.getElementsByTagNameNS("*", "Worksheet")];
+      const sheet = worksheets.find((item) => item.getAttribute("ss:Name") === sheetName || item.getAttribute("Name") === sheetName);
+      if (!sheet) return [];
+      const rows = [...sheet.getElementsByTagNameNS("*", "Row")].map((row) => {
+        return [...row.getElementsByTagNameNS("*", "Cell")].map((cell) => {
+          const data = cell.getElementsByTagNameNS("*", "Data")[0];
+          return data?.textContent ?? "";
+        });
+      });
+      if (rows.length < 2) return [];
+      const headers = rows[0];
+      return rows.slice(1).map((row) => {
+        const item = {};
+        headers.forEach((header, index) => {
+          item[header] = row[index] ?? "";
+        });
+        return item;
+      });
+    }
+
+    function parsePeopleFromCsv(text) {
+      const rows = parseCsvRows(text.replace(/^\uFEFF/, ""));
+      if (rows.length < 2) {
+        throw new Error("CSV 需要標題列與至少一筆人物資料。");
+      }
+      const headers = rows[0].map((item) => item.trim());
+      return rows.slice(1).filter((row) => row.some(Boolean)).map((row) => {
+        const item = {};
+        headers.forEach((header, index) => {
+          item[header] = row[index] ?? "";
+        });
+        return item;
+      });
+    }
+
+    function parseCsvRows(text) {
+      const rows = [];
+      let row = [];
+      let cell = "";
+      let inQuotes = false;
+      for (let i = 0; i < text.length; i += 1) {
+        const char = text[i];
+        const next = text[i + 1];
+        if (char === '"' && inQuotes && next === '"') {
+          cell += '"';
+          i += 1;
+        } else if (char === '"') {
+          inQuotes = !inQuotes;
+        } else if (char === "," && !inQuotes) {
+          row.push(cell);
+          cell = "";
+        } else if ((char === "\n" || char === "\r") && !inQuotes) {
+          if (char === "\r" && next === "\n") i += 1;
+          row.push(cell);
+          rows.push(row);
+          row = [];
+          cell = "";
+        } else {
+          cell += char;
+        }
+      }
+      row.push(cell);
+      rows.push(row);
+      return rows.filter((items) => items.length > 1 || items[0] !== "");
+    }
+
+    function overwritePeople(importedPeople) {
+      const seatIds = new Set(state.seats.map((seat) => seat.id));
+      state.people = defaultPeople.map((defaultPerson) => {
+        const imported = importedPeople.find((item) => item.id === defaultPerson.id);
+        if (!imported) return structuredClone(defaultPerson);
+        const color = colorPalette.find((item) => item.id === imported.colorId);
+        const nextPerson = {
+          ...defaultPerson,
+          name: Object.prototype.hasOwnProperty.call(imported, "name") ? String(imported.name || "").trim() : defaultPerson.name,
+          gender: ["male", "female"].includes(imported.gender) ? imported.gender : (defaultPerson.gender || ""),
+          colorId: color ? color.id : defaultPerson.colorId,
+          color: color ? color.hex : (imported.color || defaultPerson.color)
+        };
+        if (imported.seatId && seatIds.has(imported.seatId)) {
+          nextPerson.seatId = imported.seatId;
+          delete nextPerson.x;
+          delete nextPerson.y;
+        } else {
+          nextPerson.seatId = null;
+          const freePosition = imported.freePosition && typeof imported.freePosition === "object"
+            ? imported.freePosition
+            : {};
+          const importedX = imported.x ?? freePosition.x;
+          const importedY = imported.y ?? freePosition.y;
+          const fallbackX = defaultPerson.role === "teacher" ? 437 : 40;
+          const fallbackY = defaultPerson.role === "teacher" ? 95 : 610;
+          nextPerson.x = Number(importedX) || fallbackX;
+          nextPerson.y = Number(importedY) || fallbackY;
+        }
+        return nextPerson;
+      });
+    }
+
+    function overwriteColors(importedColors) {
+      if (!Array.isArray(importedColors)) return;
+      importedColors.forEach((imported) => {
+        const color = colorPalette.find((item) => item.id === imported.id);
+        if (!color) return;
+        if (imported.hex) {
+          color.hex = normalizeHex(imported.hex, color.hex);
+        } else if (imported.r !== undefined || imported.g !== undefined || imported.b !== undefined) {
+          color.hex = rgbToHex(Number(imported.r) || 0, Number(imported.g) || 0, Number(imported.b) || 0);
+        }
+        if (imported.name) color.name = String(imported.name);
+      });
+    }
+
+    function normalizeHex(value, fallback) {
+      const text = String(value || "").trim();
+      return /^#[0-9a-fA-F]{6}$/.test(text) ? text.toLowerCase() : fallback;
+    }
+
+    function normalizeSeatAssignments() {
+      const occupied = new Set();
+      state.people.filter(isVisiblePerson).forEach((person) => {
+        if (person.role === "teacher" && person.seatId === null) {
+          person.x = clamp(Number(person.x) || TEACHER_AREA.x, TEACHER_AREA.x, TEACHER_AREA.x + TEACHER_AREA.width - CARD.width);
+          person.y = clamp(Number(person.y) || TEACHER_AREA.y, TEACHER_AREA.y, TEACHER_AREA.y + TEACHER_AREA.height - CARD.height);
+          return;
+        }
+        const seat = getSeat(person.seatId);
+        if (!seat || seat.type !== person.role || occupied.has(person.seatId)) {
+          const nextSeat = state.seats.find((candidate) => {
+            return candidate.type === person.role && !occupied.has(candidate.id);
+          });
+          person.seatId = nextSeat ? nextSeat.id : null;
+          delete person.x;
+          delete person.y;
+        }
+        if (person.seatId) occupied.add(person.seatId);
+      });
+    }
+
+    function setView(view) {
+      document.body.dataset.view = view;
+      teacherViewBtn.classList.toggle("active", view === "teacher");
+      studentViewBtn.classList.toggle("active", view === "student");
+      viewNote.textContent = view === "teacher"
+        ? "老師視角：座位位置旋轉 180 度，但文字保持正向，站在前方看台下時可直接點名或列印。"
+        : "學生視角：坐在台下看前方，左右方向符合學生或投影畫面。";
+      roomLayer.setAttribute("transform", "");
+      localStorage.setItem(`${STORAGE_KEY}_view`, view);
+      drawStaticRoom();
+      drawFurniture();
+      drawPeople();
+      updateDataBox();
+    }
+
+    function showStatus(message, isWarning = false) {
+      statusText.textContent = message;
+      statusText.style.color = isWarning ? "#b42318" : "var(--ok)";
+      window.clearTimeout(showStatus.timer);
+      showStatus.timer = window.setTimeout(() => {
+        statusText.textContent = "";
+      }, 2400);
+    }
+
+    function renderAll() {
+      drawStaticRoom();
+      drawFurniture();
+      drawPeople();
+      renderNameInputs();
+      renderColorGrid();
+      updateDataBox();
+    }
+
+    buildSeatModel();
+    loadState();
+    renderAll();
+
+    document.getElementById("saveBtn").addEventListener("click", () => saveState(true));
+    document.getElementById("exportBtn").addEventListener("click", exportJson);
+    document.getElementById("exportCsvBtn").addEventListener("click", exportCsv);
+    document.getElementById("importBtn").addEventListener("click", () => importFile.click());
+    document.getElementById("sampleGroupBtn").addEventListener("click", loadSampleGroupWithPassword);
+    importFile.addEventListener("change", () => {
+      const file = importFile.files?.[0];
+      if (file) importOverwrite(file);
+    });
+    document.getElementById("resetBtn").addEventListener("click", resetState);
+    teacherViewBtn.addEventListener("click", () => setView("teacher"));
+    studentViewBtn.addEventListener("click", () => setView("student"));
+    document.querySelectorAll("[data-case]").forEach((button) => {
+      button.addEventListener("click", () => {
+        if (button.dataset.case !== "clear") {
+          setView("student");
+        }
+        showCaseOverlay(button.dataset.case);
+      });
+    });
+    setView(localStorage.getItem(`${STORAGE_KEY}_view`) || "teacher");
+    window.addEventListener("beforeunload", () => saveState(false));
+  </script>
 </body>
 </html>
