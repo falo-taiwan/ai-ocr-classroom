@@ -500,6 +500,7 @@
           <button type="button" data-case="data">案件：資料閉環</button>
           <button type="button" data-case="clear">關閉註解</button>
         </div>
+        <p class="hint">工程模式以學生視角為標準座標；點選案件會自動切到學生視角再顯示 SVG 註解圖層。</p>
         <input id="importFile" type="file" accept=".json,.csv,.xls,.xml,text/csv,application/json,application/vnd.ms-excel,text/xml" hidden>
 
         <div class="svg-wrap">
@@ -645,6 +646,9 @@
     function showCaseOverlay(caseId) {
       caseOverlayLayer.replaceChildren();
       if (caseId === "clear") return;
+      if (!isTeacherView()) {
+        viewNote.textContent = "工程模式：以學生視角作為標準座標，圖上註解可用來說明資料規則。";
+      }
 
       const group = createSvgElement("g", { "data-case": caseId });
       const overlay = createSvgElement("rect", {
@@ -1204,7 +1208,7 @@
           views: ["teacher", "student"],
           viewDefinitions: {
             teacher: "座位位置旋轉 180 度，但文字保持正向；站在教室前方看台下時，方向符合老師本人視角，適合列印點名。",
-            student: "坐在學生座位看講台，左右方向符合學生或投影視角。"
+            student: "坐在學生座位看講台，左右方向符合學生或投影視角，也是工程模式註解的標準座標。"
           },
           roleBoundaries: getRuleRows().filter((rule) => rule.category === "role_boundary"),
           coordinateSystems: getRuleRows().filter((rule) => rule.category === "coordinate_system"),
@@ -1668,7 +1672,12 @@
     teacherViewBtn.addEventListener("click", () => setView("teacher"));
     studentViewBtn.addEventListener("click", () => setView("student"));
     document.querySelectorAll("[data-case]").forEach((button) => {
-      button.addEventListener("click", () => showCaseOverlay(button.dataset.case));
+      button.addEventListener("click", () => {
+        if (button.dataset.case !== "clear") {
+          setView("student");
+        }
+        showCaseOverlay(button.dataset.case);
+      });
     });
     setView(localStorage.getItem(`${STORAGE_KEY}_view`) || "teacher");
     window.addEventListener("beforeunload", () => saveState(false));
