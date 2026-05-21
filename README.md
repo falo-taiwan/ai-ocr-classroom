@@ -1,30 +1,129 @@
-# AI OCR Classroom SVG Seating Map
+# 九宮格 AI Vision Benchmark
 
-Falo X Force Cheng v1.02 teaching demo.
+這個專案是一個純 HTML / JavaScript 的可控式 Vision / OCR 教學實驗場。
 
-This repository publishes the AI OCR classroom seating tool and companion reference files for Gemini / Canva imitation practice.
+它不是單純的九宮格小工具，而是用最小畫面示範 AI 應用落地的完整流程：
 
-## Entry
+```text
+可控資料生成 -> 畫面干擾 -> 捕捉 ROI -> 多種辨識方法 -> 綜合加權決策 -> 分析圖表 -> 雙紀錄匯出 -> AI 回饋校正
+```
 
-- `index.html`: main runnable classroom seating tool.
-- `guide.html`: integrated HTML reference for Gemini / Canva imitation practice and human guidance.
-- `guide.md`: Markdown guide for docs, NotebookLM, or AI context experiments.
-- `classroom-seat-map-v1.01.html`: traceable v1.01 copy.
-- `classroom-seat-map-v1.02.html`: traceable v1.02 copy.
-- `backup/ai-ocr-classroom-v1.01-20260521-184151.zip`: v1.01 handoff archive.
-- `backup/ai-ocr-classroom-v1.02-20260521-192521.zip`: v1.02 handoff archive.
-- `docs/ai-ocr-classroom-v1.02.md`: human-readable v1.02 notes.
-- `docs/ai-ocr-classroom-v1.02.html`: human-readable v1.02 HTML notes.
+## GitHub Pages 入口
 
-## Teaching Concepts
+- `index.html`
+  - GitHub Pages 建議入口。
+  - 目前版本：`v0.05`。
+  - 已整合主操作頁、橫向工作列、固定決策權重、鍵盤熱鍵、整體縮放、瀏覽器記憶保存、JSON 匯出、紀錄分頁、分析圖表 view、專案說明 view、干擾設計說明、AI 協作教學、SEO/GEO meta 與 `Falo X Force Cheng 2026/5/18` 標記。
 
-- SVG classroom layout.
-- Teacher graphic coordinate system.
-- Student fixed seat coordinate system.
-- Name-driven visibility.
-- Seat swap rule.
-- JSON / Excel import-export loop.
-- Password-gated sample group loading.
-- 4 male + 4 female English sample dataset.
-- Difference between prompt-only and prompt-plus-guide workflows.
-- Future OCR recognition and database overwrite workflow.
+## 目前檔案
+
+- `mode1-color-grid-benchmark.html`
+  - 開發過程中的主操作頁版本。
+  - 支援 Mode 1 顏色九宮格、干擾生成、演算法切換、綜合加權、CSV 匯出。
+
+- `docs/interference-ai-collaboration.md`
+  - 干擾設計與 AI 協作方式說明。
+
+- `docs/interference-ai-collaboration.html`
+  - 可直接瀏覽的教學版說明頁。
+
+正式發布時可以優先使用 `index.html` 作為單檔展示頁。
+
+## AI OCR Classroom v-b.203
+
+- `classroom-seat-map.html`
+  - 教室座位 SVG 配置工具。
+  - 預設畫面去識別化；受保護範例資料需輸入密碼後才解密載入。
+  - 支援密碼門檻載入範例資料、學生視角工程註解、JSON / Excel 匯入匯出。
+  - v-b.203 起，程式碼內加入大量 `Falo X Force Cheng` 教學註解，讓 HTML 本身也能當教材閱讀。
+
+- `docs/ai-ocr-classroom-v1.02.md`
+  - 人看的 Markdown 說明。
+
+- `docs/ai-ocr-classroom-v1.02.html`
+  - 人看的 HTML 說明頁。
+
+## Mode 1 核心功能
+
+- 每 N 秒產生九宮格顏色。
+- 每 N 秒掃描九宮格。
+- 捕捉區域預設為每格中央 80%，以虛線標示。
+- 可切換辨識方法：
+  - 中央區域平均
+  - 整格平均 RGB
+  - 主要顏色投票
+  - 綜合加權
+- 決策權重永遠顯示：
+  - 中央區域平均：`100 / 0 / 0`
+  - 整格平均 RGB：`0 / 100 / 0`
+  - 主要顏色投票：`0 / 0 / 100`
+  - 綜合加權預設：`33 / 33 / 34`
+- 可匯出：
+  - `capture_log`
+  - `weighted_decision_log`
+  - JSON 完整狀態包
+- 可查看分析圖表：
+  - 演算法準確率
+  - 干擾條件準確率
+  - 真實顏色命中率
+  - 錯判對照
+  - 單色版 / 多彩版切換
+  - 預設使用多彩版
+- 可切換三種版面配色：
+  - 標準
+  - 實驗綠
+  - 活力橘
+- 可用 `＋放大視窗` / `－縮小視窗` 調整整個操作介面。
+- 可用鍵盤熱鍵操作，方便 AI Computer Use 教學。
+- 重新整理頁面後會保留瀏覽器本機紀錄；按「清除紀錄」會連同網頁記憶一起刪除。
+
+## 操作案件對應
+
+| 按鈕 | 對應案件 | 教學意義 |
+|---|---|---|
+| 開始 | 啟動定時產生與定時掃描 | 建立連續觀測資料 |
+| 結束 | 停止定時任務 | 保留狀態，進行觀察與討論 |
+| 產生一次 | 只刷新 Ground Truth | 控制單一測試樣本 |
+| 掃描一次 | 只做一次辨識 | 比較演算法與干擾條件 |
+| 改變版面配色 | 三種白底展示風格 | 示範同功能在不同教學場景的呈現 |
+| ＋ / － 視窗縮放 | 調整整個介面 | 示範畫面尺度如何影響 Computer Use 操作視野 |
+| 清除紀錄與記憶 | 清除畫面紀錄與 localStorage | 重新開始一輪乾淨實驗 |
+
+## 鍵盤熱鍵
+
+| 熱鍵 | 動作 |
+|---|---|
+| `S` | 開始 |
+| `E` | 結束 |
+| `G` | 產生一次 |
+| `C` | 掃描一次 |
+| `T` | 切換版面配色 |
+| `+` / `-` | 放大 / 縮小整個介面 |
+| `A` | 分析圖表 |
+| `H` / `?` | 專案說明 |
+
+## 干擾設計重點
+
+目前干擾分成兩種任務：
+
+1. 底圖還原壓力測試
+   - A：遮罩占 ROI 多數，但正確答案仍是底圖。
+   - B：遮罩占 ROI 少數，正確答案仍是底圖。
+
+2. 雙色比例測試
+   - 每格隨機產生兩種顏色，比例 20% 到 80%。
+   - 正確答案是面積占比較多的顏色。
+
+這兩種任務故意分開，因為 AI 落地時「正確答案」不是自然存在，而是由任務定義決定。
+
+## 教學定位
+
+這個 demo 可以用來說明：
+
+- 模擬資料用 AI
+- OCR / Vision / Computer Use 的畫面辨識
+- 多演算法決策
+- 紀錄與 audit trail
+- AI 回饋校正
+
+它對應到更大的 AI 生態概念：AI 不只是一個聊天模型，而是一整套資料、模型、工作流、部署、監控與回饋校正系統。

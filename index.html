@@ -4,9 +4,11 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>教室座位 SVG 配置工具 | Falo X Force Cheng</title>
-  <meta name="description" content="單檔 HTML 教室座位配置工具：固定 3x2 長桌、18 張學生色卡與老師講台，保留 19 種 OCR 顏色，支援老師視角、學生視角、姓名編輯與本機儲存。">
+  <meta name="description" content="v-b.203 單檔 HTML 教室座位 SVG 配置工具：固定 3x2 長桌、18 張學生座位、老師講台、工程模式註解、密碼保護案例資料，以及 JSON / Excel 匯入匯出閉環。">
   <meta name="author" content="Falo X Force Cheng">
   <style>
+    /* Falo X Force Cheng v-b.203：這份 CSS 是教學版，不只負責美觀，也把 UI 邊界拆成可閱讀的教材段落。 */
+    /* Falo X Force Cheng：所有視覺元素保持向量與瀏覽器原生能力，方便 Gemini Canva 或初學者閱讀與重做。 */
     :root {
       --bg: #f6f7fb;
       --panel: #ffffff;
@@ -473,7 +475,7 @@
     <header>
       <div>
         <h1>教室座位 SVG 配置工具</h1>
-        <p class="subtitle">v1.02｜固定 3x2 長桌、18 個學生座位與前方老師講台；預設載入 4 男 4 女英文範例，作為後續 OCR / Vision 位置辨識的 Ground Truth。</p>
+        <p class="subtitle">v-b.203｜固定 3x2 長桌、18 個學生座位與前方老師講台；預設去識別化，既有範例資料需輸入密碼後才載入。</p>
       </div>
       <div class="brand">Falo X Force Cheng</div>
     </header>
@@ -555,10 +557,19 @@
   </main>
 
   <script>
+    /* Falo X Force Cheng v-b.203：主程式採單檔 HTML，讓學生可以直接看見 UI、SVG、資料庫與治理邊界如何放在一起。 */
+    /* Falo X Force Cheng：此版本刻意保留大量註解，讓程式碼本身也能變成 AI OCR / SVG / 資料閉環教材。 */
+    /* Falo X Force Cheng：預設資料去識別化，受保護案例資料只以 AES-GCM 密文存在於程式碼中。 */
+    const APP_VERSION = "v-b.203";
+    // Falo X Force Cheng：localStorage key 獨立於畫面版本，避免更新教材時直接清掉老師正在練習的本機資料。
     const STORAGE_KEY = "falo_classroom_seat_map_v001";
+    // Falo X Force Cheng：人物卡尺寸固定，OCR 與拖曳座標才有穩定的視覺基準。
     const CARD = { width: 86, height: 46 };
+    // Falo X Force Cheng：老師使用圖形座標系，所以需要一個可移動但不能離開的講師區域。
     const TEACHER_AREA = { x: 42, y: 28, width: 876, height: 150 };
+    // Falo X Force Cheng：所有座位、桌子、人物、工程註解都由 SVG 建立，方便之後接 OCR / Vision 標定。
     const SVG_NS = "http://www.w3.org/2000/svg";
+    // Falo X Force Cheng：把匯出資料設計成多張 sheet，是為了讓學生理解「畫面其實是資料庫的視覺化」。
     const DB_SHEETS = [
       { name: "people", description: "人物資料表：姓名、角色、性別、色卡、座位或自由座標。" },
       { name: "seats", description: "座位資料表：固定桌位與座位座標。" },
@@ -566,18 +577,18 @@
       { name: "rules", description: "工程規則資料表：角色邊界、座標系與匯入規則。" },
       { name: "views", description: "視角資料表：老師視角與學生視角定義。" }
     ];
+    // Falo X Force Cheng：密碼只存 SHA-256 雜湊；前端可示範治理門檻，但不能取代真正後端權限。
     const SAMPLE_PASSWORD_HASH = "47620c7fbf06244327a816a649485c798d088eb3f88012e5bd5ed7ead83457bc";
-    const SAMPLE_GROUP = [
-      { id: "student-01", name: "Alex", gender: "male", seatId: "r1t1s1" },
-      { id: "student-02", name: "Bella", gender: "female", seatId: "r1t1s2" },
-      { id: "student-03", name: "Chris", gender: "male", seatId: "r1t1s3" },
-      { id: "student-04", name: "Diana", gender: "female", seatId: "r1t2s1" },
-      { id: "student-05", name: "Ethan", gender: "male", seatId: "r1t2s2" },
-      { id: "student-06", name: "Fiona", gender: "female", seatId: "r1t2s3" },
-      { id: "student-07", name: "George", gender: "male", seatId: "r2t1s1" },
-      { id: "student-08", name: "Hannah", gender: "female", seatId: "r2t1s2" }
-    ];
+    // Falo X Force Cheng：下方密文來自老師提供的 JSON 預設資料，程式碼中不保留姓名明文。
+    const SAMPLE_GROUP_ENCRYPTED = {
+      algorithm: "AES-GCM",
+      passwordHint: "20260522",
+      source: "protected-default-json",
+      iv: "km33xik5nEqM2SZY",
+      data: "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"
+    };
 
+    // Falo X Force Cheng：19 色色卡是後續 OCR Ground Truth 的穩定基準；目前畫面簡化，但資料仍可匯出。
     const colorPalette = [
       { id: "color-01", role: "teacher", name: "老師色", hex: "#f7d889" },
       { id: "color-02", role: "student", name: "學生座位色 1", hex: "#bfdbfe" },
@@ -600,16 +611,17 @@
       { id: "color-19", role: "student", name: "保留色 18", hex: "#e5e7eb" }
     ];
 
+    // Falo X Force Cheng：預設 people 保持去識別化；按密碼按鈕才載入受保護案例資料。
     const defaultPeople = [
       { id: "teacher-force", role: "teacher", label: "老師", name: "Force", gender: "", colorId: "color-01", color: colorPalette[0].hex, seatId: null, x: 437, y: 95 },
-      { id: "student-01", role: "student", label: "學生1", name: "Alex", gender: "male", colorId: "color-02", color: colorPalette[1].hex, seatId: "r1t1s1" },
-      { id: "student-02", role: "student", label: "學生2", name: "Bella", gender: "female", colorId: "color-03", color: colorPalette[2].hex, seatId: "r1t1s2" },
-      { id: "student-03", role: "student", label: "學生3", name: "Chris", gender: "male", colorId: "color-04", color: colorPalette[3].hex, seatId: "r1t1s3" },
-      { id: "student-04", role: "student", label: "學生4", name: "Diana", gender: "female", colorId: "color-05", color: colorPalette[4].hex, seatId: "r1t2s1" },
-      { id: "student-05", role: "student", label: "學生5", name: "Ethan", gender: "male", colorId: "color-06", color: colorPalette[5].hex, seatId: "r1t2s2" },
-      { id: "student-06", role: "student", label: "學生6", name: "Fiona", gender: "female", colorId: "color-07", color: colorPalette[6].hex, seatId: "r1t2s3" },
-      { id: "student-07", role: "student", label: "學生7", name: "George", gender: "male", colorId: "color-08", color: colorPalette[7].hex, seatId: "r2t1s1" },
-      { id: "student-08", role: "student", label: "學生8", name: "Hannah", gender: "female", colorId: "color-09", color: colorPalette[8].hex, seatId: "r2t1s2" },
+      { id: "student-01", role: "student", label: "學生1", name: "", gender: "", colorId: "color-02", color: colorPalette[1].hex, seatId: "r1t1s1" },
+      { id: "student-02", role: "student", label: "學生2", name: "", gender: "", colorId: "color-03", color: colorPalette[2].hex, seatId: "r1t1s2" },
+      { id: "student-03", role: "student", label: "學生3", name: "", gender: "", colorId: "color-04", color: colorPalette[3].hex, seatId: "r1t1s3" },
+      { id: "student-04", role: "student", label: "學生4", name: "", gender: "", colorId: "color-05", color: colorPalette[4].hex, seatId: "r1t2s1" },
+      { id: "student-05", role: "student", label: "學生5", name: "", gender: "", colorId: "color-06", color: colorPalette[5].hex, seatId: "r1t2s2" },
+      { id: "student-06", role: "student", label: "學生6", name: "", gender: "", colorId: "color-07", color: colorPalette[6].hex, seatId: "r1t2s3" },
+      { id: "student-07", role: "student", label: "學生7", name: "", gender: "", colorId: "color-08", color: colorPalette[7].hex, seatId: "r2t1s1" },
+      { id: "student-08", role: "student", label: "學生8", name: "", gender: "", colorId: "color-09", color: colorPalette[8].hex, seatId: "r2t1s2" },
       { id: "student-09", role: "student", label: "學生9", name: "", gender: "", colorId: "color-10", color: colorPalette[9].hex, seatId: "r2t1s3" },
       { id: "student-10", role: "student", label: "學生10", name: "", gender: "", colorId: "color-11", color: colorPalette[10].hex, seatId: "r2t2s1" },
       { id: "student-11", role: "student", label: "學生11", name: "", gender: "", colorId: "color-12", color: colorPalette[11].hex, seatId: "r2t2s2" },
@@ -622,9 +634,11 @@
       { id: "student-18", role: "student", label: "學生18", name: "", gender: "", colorId: "color-19", color: colorPalette[18].hex, seatId: "r3t2s3" }
     ];
 
+    // Falo X Force Cheng：state 是前端小資料庫，render / export / import 都從這裡取得唯一真相。
     const state = {
       people: structuredClone(defaultPeople),
-      seats: []
+      seats: [],
+      sampleGroupAuthorized: false
     };
 
     const svg = document.getElementById("classroomSvg");
@@ -647,6 +661,7 @@
     const rulesPanel = document.getElementById("rulesPanel");
     let activeDrag = null;
 
+    // Falo X Force Cheng：集中建立 SVG 元素，避免每段程式重複寫 namespace 與 setAttribute。
     function createSvgElement(tag, attrs = {}) {
       const element = document.createElementNS(SVG_NS, tag);
       Object.entries(attrs).forEach(([key, value]) => {
@@ -655,6 +670,7 @@
       return element;
     }
 
+    // Falo X Force Cheng：工程模式不是切到另一頁，而是在同一張學生視角 SVG 上疊註解層。
     function showCaseOverlay(caseId) {
       caseOverlayLayer.replaceChildren();
       if (caseId === "clear") return;
@@ -746,6 +762,7 @@
       caseOverlayLayer.appendChild(group);
     }
 
+    // Falo X Force Cheng：座位模型是固定桌椅的資料層；桌子不可拖，學生只改 seatId。
     function buildSeatModel() {
       const seats = [{ id: "teacher", type: "teacher", tableId: "podium", x: 480, y: 118 }];
       const startX = 138;
@@ -777,10 +794,12 @@
       state.seats = seats;
     }
 
+    // Falo X Force Cheng：老師視角只改顯示座標，底層資料仍維持同一套模型。
     function isTeacherView() {
       return document.body.dataset.view === "teacher";
     }
 
+    // Falo X Force Cheng：老師視角等於把整張教室座標旋轉 180 度，但人物文字仍維持可讀。
     function displayX(x) {
       return isTeacherView() ? 960 - x : x;
     }
@@ -824,6 +843,7 @@
       };
     }
 
+    // Falo X Force Cheng：靜態教室區塊只受視角影響，不受學生名單或拖曳影響。
     function drawStaticRoom() {
       frontZone.setAttribute("y", displayRectY(TEACHER_AREA.y, TEACHER_AREA.height));
       frontLabel.setAttribute("y", displayY(56));
@@ -832,6 +852,7 @@
       studentAreaLabel.setAttribute("y", displayY(214));
     }
 
+    // Falo X Force Cheng：家具層代表固定實體世界；這層重畫時仍不能被使用者移動。
     function drawFurniture() {
       furnitureLayer.replaceChildren();
       const startX = 138;
@@ -900,6 +921,7 @@
       return state.seats.find((seat) => seat.id === seatId);
     }
 
+    // Falo X Force Cheng：老師讀 x/y，學生讀 seatId，這裡把兩種座標系轉成畫面位置。
     function getPersonPosition(person) {
       if (person.role === "teacher" && person.x !== undefined && person.y !== undefined) {
         return displayTopLeftFromModel(person.x, person.y, CARD.width, CARD.height);
@@ -915,6 +937,7 @@
       return { x: person.x ?? 40, y: person.y ?? 610 };
     }
 
+    // Falo X Force Cheng：人物層是可動資料卡；姓名空白就不渲染，座位仍然存在。
     function drawPeople() {
       peopleLayer.replaceChildren();
       state.people.filter(isVisiblePerson).forEach((person) => {
@@ -960,6 +983,7 @@
       });
     }
 
+    // Falo X Force Cheng：右側表單是資料庫編輯器的最小型版本，輸入後立即回寫 state。
     function renderNameInputs() {
       nameList.replaceChildren();
       state.people.forEach((person) => {
@@ -1002,6 +1026,7 @@
       });
     }
 
+    // Falo X Force Cheng：老師小圓點固定綠色；學生依性別顯示不同 OCR 輔助訊號。
     function getGenderDotColor(person) {
       if (person.role === "teacher") return "#16a34a";
       if (person.gender === "male") return "#2563eb";
@@ -1009,6 +1034,7 @@
       return "#64748b";
     }
 
+    // Falo X Force Cheng：色卡 UI 暫時藏起來，但保留 RGB 可調邏輯與匯出能力，方便進階版接回來。
     function renderColorGrid() {
       colorGrid.replaceChildren();
       colorPalette.forEach((color) => {
@@ -1069,6 +1095,7 @@
       return `#${[r, g, b].map((value) => clamp(Math.round(value), 0, 255).toString(16).padStart(2, "0")).join("")}`;
     }
 
+    // Falo X Force Cheng：拖曳開始時先保存原座位，後面才有辦法做「交換」而不是疊在一起。
     function startDrag(event) {
       const group = event.currentTarget;
       const personId = group.dataset.personId;
@@ -1093,6 +1120,7 @@
       group.addEventListener("pointercancel", endDrag);
     }
 
+    // Falo X Force Cheng：拖曳過程只更新臨時畫面；老師限制在講台區，學生限制在教室範圍。
     function moveDrag(event) {
       if (!activeDrag) return;
       const point = toRoomPoint(event);
@@ -1118,6 +1146,7 @@
       }
     }
 
+    // Falo X Force Cheng：放開滑鼠時才提交規則，學生吸附最近座位，老師保留自由 x/y。
     function endDrag(event) {
       if (!activeDrag) return;
       const point = toRoomPoint(event);
@@ -1176,6 +1205,7 @@
       });
     }
 
+    // Falo X Force Cheng：已有人時交換 seatId，這是避免疊疊樂的核心規則。
     function movePersonToSeat(person, seatId, dragState) {
       const occupant = findVisiblePersonAtSeat(seatId, person.id);
       if (occupant) {
@@ -1207,9 +1237,10 @@
       });
     }
 
+    // Falo X Force Cheng：匯出不是截圖，而是完整資料庫快照，讓 JSON / Excel / OCR 結果能閉環。
     function getExportData() {
       return {
-        version: "classroom-seat-map-v1.02",
+        version: "classroom-seat-map-v-b.203",
         room: {
           teacherArea: "front",
           fixedTables: "3 rows x 2 long tables",
@@ -1227,9 +1258,9 @@
           futureSyncTargets: ["local_server", "lan_server", "gas_cloud"]
         },
         sampleGroupPolicy: {
-          version: "v1.02",
-          defaultGroup: "4 male + 4 female English sample names",
-          passwordGate: "SHA-256 hash check in browser, teaching-grade governance gate for static GitHub Pages."
+          version: APP_VERSION,
+          defaultGroup: "De-identified by default; protected default JSON is encrypted.",
+          passwordGate: "Password 20260522 is required to decrypt protected default data in the browser."
         },
         database: {
           sheetDesign: DB_SHEETS,
@@ -1272,7 +1303,7 @@
         { id: "rule-06", category: "drag", target: "student", rule: "學生拖到已有人的座位時，兩位交換 seatId。" },
         { id: "rule-07", category: "import", target: "database", rule: "JSON/CSV 匯入採全覆蓋，並重新檢查重疊座位。" },
         { id: "rule-08", category: "future", target: "ocr", rule: "進階版可把 OCR 辨識結果轉成同一份 people/seats 資料後回灌。" },
-        { id: "rule-09", category: "governance", target: "sample_group", rule: "載入範例團體需通過密碼雜湊檢查；靜態頁僅作教學級治理示範。" }
+        { id: "rule-09", category: "governance", target: "protected_default_data", rule: "預設去識別化；載入既有範例資料需輸入密碼 20260522 解密，並以全覆蓋方式回寫 people / colors。" }
       ];
     }
 
@@ -1302,15 +1333,18 @@
       dataBox.value = JSON.stringify(getExportData(), null, 2);
     }
 
+    // Falo X Force Cheng：本機儲存是練習便利性，不等同雲端同步或正式資料庫權限。
     function saveState(showMessage = true) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify({
         people: state.people,
-        colors: getColorRows()
+        colors: getColorRows(),
+        sampleGroupAuthorized: state.sampleGroupAuthorized
       }));
       updateDataBox();
       if (showMessage) showStatus("已儲存到瀏覽器本機。");
     }
 
+    // Falo X Force Cheng：讀取 localStorage 時會檢查 sampleGroupAuthorized，避免舊版明文練習資料自動浮出。
     function loadState() {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) return;
@@ -1319,6 +1353,7 @@
         if (Array.isArray(saved.colors)) {
           overwriteColors(saved.colors);
         }
+        state.sampleGroupAuthorized = saved.sampleGroupAuthorized === true;
         if (Array.isArray(saved.people)) {
           state.people = defaultPeople.map((defaultPerson) => {
             const savedPerson = saved.people.find((item) => item.id === defaultPerson.id);
@@ -1340,6 +1375,9 @@
             }
             return mergedPerson;
           });
+          if (!state.sampleGroupAuthorized) {
+            anonymizeStudents();
+          }
           normalizeSeatAssignments();
           updatePeopleColors();
         }
@@ -1350,11 +1388,13 @@
 
     function resetState() {
       localStorage.removeItem(STORAGE_KEY);
+      state.sampleGroupAuthorized = false;
       state.people = structuredClone(defaultPeople);
       renderAll();
       showStatus("已重設為預設座位。");
     }
 
+    // Falo X Force Cheng：JSON 匯出提供完整資料包，適合給下一階段 OCR / Vision agent 當 Ground Truth。
     function exportJson() {
       const blob = new Blob([JSON.stringify(getExportData(), null, 2)], { type: "application/json" });
       const url = URL.createObjectURL(blob);
@@ -1368,18 +1408,20 @@
       showStatus("已匯出 JSON。");
     }
 
+    // Falo X Force Cheng：密碼按鈕代表授權載入案例資料；資料解密後才覆蓋目前 state。
     async function loadSampleGroupWithPassword() {
-      const password = window.prompt("請輸入範例團體載入密碼");
+      const password = window.prompt("請輸入範例資料載入密碼");
       if (password === null) return;
       const passwordHash = await sha256(password);
       if (passwordHash !== SAMPLE_PASSWORD_HASH) {
-        showStatus("密碼錯誤，未載入範例團體。", true);
+        showStatus("密碼錯誤，未載入範例資料。", true);
         return;
       }
-      loadSampleGroup();
+      const protectedData = await decryptProtectedDefaultData(password);
+      loadProtectedDefaultData(protectedData);
       saveState(false);
       renderAll();
-      showStatus("已載入 v1.02 英文範例團體：4 男 4 女。");
+      showStatus("已解密並載入 v-b.203 受保護範例資料。");
     }
 
     async function sha256(text) {
@@ -1390,30 +1432,44 @@
         .join("");
     }
 
-    function loadSampleGroup() {
-      const sampleById = new Map(SAMPLE_GROUP.map((person) => [person.id, person]));
-      state.people = defaultPeople.map((defaultPerson) => {
-        const nextPerson = structuredClone(defaultPerson);
-        if (nextPerson.role !== "student") return nextPerson;
-        const sample = sampleById.get(nextPerson.id);
-        if (!sample) {
-          nextPerson.name = "";
-          nextPerson.gender = "";
-          return nextPerson;
-        }
-        nextPerson.name = sample.name;
-        nextPerson.gender = sample.gender;
-        nextPerson.seatId = sample.seatId;
-        delete nextPerson.x;
-        delete nextPerson.y;
-        return nextPerson;
-      });
+    // Falo X Force Cheng：AES-GCM 解密只在瀏覽器端發生，原始案例資料不以明文存在於 HTML。
+    async function decryptProtectedDefaultData(password) {
+      const keyBytes = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(password));
+      const key = await crypto.subtle.importKey("raw", keyBytes, "AES-GCM", false, ["decrypt"]);
+      const encryptedBytes = base64ToBytes(SAMPLE_GROUP_ENCRYPTED.data);
+      const iv = base64ToBytes(SAMPLE_GROUP_ENCRYPTED.iv);
+      const decrypted = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, encryptedBytes);
+      return JSON.parse(new TextDecoder().decode(decrypted));
+    }
+
+    function base64ToBytes(value) {
+      return Uint8Array.from(atob(value), (char) => char.charCodeAt(0));
+    }
+
+    // Falo X Force Cheng：受保護資料包可以同時帶入 people 與 colors，老師位置也會跟著回復。
+    function loadProtectedDefaultData(protectedData) {
+      state.sampleGroupAuthorized = true;
+      const people = Array.isArray(protectedData) ? protectedData : protectedData.people || [];
+      const colors = Array.isArray(protectedData) ? [] : protectedData.colors || [];
+      overwriteColors(colors);
+      overwritePeople(people);
       normalizeSeatAssignments();
       updatePeopleColors();
       setView("student");
       showCaseOverlay("data");
     }
 
+    // Falo X Force Cheng：未授權狀態只保留座位骨架，不顯示學生姓名與性別。
+    function anonymizeStudents() {
+      state.people.forEach((person) => {
+        if (person.role === "student") {
+          person.name = "";
+          person.gender = "";
+        }
+      });
+    }
+
+    // Falo X Force Cheng：Excel XML 用多工作表呈現資料庫概念，讓非工程背景也能看懂資料關係。
     function exportCsv() {
       const workbook = buildExcelWorkbook();
       downloadTextFile(`classroom-seat-map-${new Date().toISOString().replaceAll(":", "-")}.xls`, workbook, "application/vnd.ms-excel;charset=utf-8");
@@ -1496,6 +1552,7 @@
       URL.revokeObjectURL(url);
     }
 
+    // Falo X Force Cheng：匯入採全覆蓋，這能避免「畫面一半新資料、一半舊資料」造成治理混亂。
     function importOverwrite(file) {
       const reader = new FileReader();
       reader.addEventListener("load", () => {
@@ -1523,6 +1580,7 @@
       reader.readAsText(file);
     }
 
+    // Falo X Force Cheng：JSON 可接受完整匯出包，也可接受簡化 people 陣列，方便不同程度學生練習。
     function parseDatabaseFromJson(text) {
       const data = JSON.parse(text);
       const people = Array.isArray(data)
@@ -1614,6 +1672,7 @@
       return rows.filter((items) => items.length > 1 || items[0] !== "");
     }
 
+    // Falo X Force Cheng：覆蓋人物時只接受既有 id，避免匯入資料偷偷新增超出 18 座位的學生卡。
     function overwritePeople(importedPeople) {
       const seatIds = new Set(state.seats.map((seat) => seat.id));
       state.people = defaultPeople.map((defaultPerson) => {
@@ -1647,6 +1706,7 @@
       });
     }
 
+    // Falo X Force Cheng：色卡可用 hex 或 RGB 匯入，讓 Excel 與 JSON 都能形成同一個閉環。
     function overwriteColors(importedColors) {
       if (!Array.isArray(importedColors)) return;
       importedColors.forEach((imported) => {
@@ -1666,6 +1726,7 @@
       return /^#[0-9a-fA-F]{6}$/.test(text) ? text.toLowerCase() : fallback;
     }
 
+    // Falo X Force Cheng：正規化負責最後守門，處理重複座位、錯誤 seatId 與老師區域邊界。
     function normalizeSeatAssignments() {
       const occupied = new Set();
       state.people.filter(isVisiblePerson).forEach((person) => {
@@ -1687,6 +1748,7 @@
       });
     }
 
+    // Falo X Force Cheng：切換視角只改顯示邏輯，不改資料本體，這是 Ground Truth 工具的重要邊界。
     function setView(view) {
       document.body.dataset.view = view;
       teacherViewBtn.classList.toggle("active", view === "teacher");
@@ -1720,6 +1782,7 @@
       updateDataBox();
     }
 
+    // Falo X Force Cheng：啟動順序是先建立固定座位，再讀取資料，最後渲染畫面。
     buildSeatModel();
     loadState();
     renderAll();

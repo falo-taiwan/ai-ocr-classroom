@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>AI OCR Classroom v1.02 說明</title>
+  <title>AI OCR Classroom v-b.203 說明</title>
   <style>
     body { margin: 0; background: #f6f7fb; color: #1d2433; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; line-height: 1.7; }
     main { width: min(900px, calc(100% - 32px)); margin: 0 auto; padding: 32px 0 48px; }
@@ -18,22 +18,24 @@
 </head>
 <body>
   <main>
-    <h1>AI OCR Classroom v1.02 說明</h1>
+    <h1>AI OCR Classroom v-b.203 說明</h1>
     <p>單檔 HTML 教室座位 SVG 工具，用一個範例教 SVG、座標系、資料庫表、治理門檻與匯入匯出閉環。</p>
 
     <section>
-      <h2>v1.02 重點</h2>
+      <h2>v-b.203 重點</h2>
       <ul>
-        <li>預設英文範例團體：4 男、4 女。</li>
-        <li>新增「案例：載入範例團體」。</li>
-        <li>載入範例團體需要密碼 <code>20260522</code>。</li>
+        <li>預設畫面去識別化，不直接顯示學生姓名與性別。</li>
+        <li>既有範例資料來自老師提供的 JSON，程式碼只保存 AES-GCM 密文，不保存姓名明文。</li>
+        <li>輸入密碼後才會解密載入人物、老師位置、座位與色卡資料。</li>
+        <li>「案例：載入範例團體」會把受保護資料全覆蓋載入目前資料庫。</li>
+        <li>程式碼內加入大量 <code>Falo X Force Cheng</code> 註解，方便同學把 HTML 當成教學版原始碼閱讀。</li>
         <li>老師 Force 小圓點固定綠色，不受男女選項影響。</li>
       </ul>
     </section>
 
     <section>
       <h2>治理邊界</h2>
-      <p>GitHub Pages 是靜態網站，因此密碼門檻是教學級治理示範，不是後端權限控管。這裡用 SHA-256 雜湊檢查來說明：範例團體資料不應無條件載入。</p>
+      <p>GitHub Pages 是靜態網站，因此密碼門檻是教學級治理示範，不是後端權限控管。這裡用 Web Crypto 做密碼雜湊與 AES-GCM 解密，說明：範例資料不應無條件載入，預設畫面應先去識別化。</p>
     </section>
 
     <section>
