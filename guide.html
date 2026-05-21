@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI OCR Classroom Gemini 模仿菜附加說明</title>
+  <meta name="description" content="AI OCR Classroom 練習的 HTML 版附加說明，不包含完整答案。">
+  <style>
+    body { margin: 0; background: #f6f7fb; color: #1d2433; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; line-height: 1.7; }
+    main { width: min(920px, calc(100% - 32px)); margin: 0 auto; padding: 32px 0 48px; }
+    section { background: #fff; border: 1px solid #d5dbea; border-radius: 8px; padding: 18px; margin: 14px 0; }
+    h1 { margin: 0 0 8px; font-size: clamp(28px, 5vw, 44px); }
+    h2 { margin: 0 0 10px; font-size: 22px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+    th, td { border: 1px solid #d5dbea; padding: 8px; text-align: left; }
+    th { background: #eef2ff; }
+    code { background: #eef2ff; padding: 2px 5px; border-radius: 4px; }
+    .note { color: #9a3412; font-weight: 800; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>AI OCR Classroom Gemini 模仿菜附加說明</h1>
+    <p class="note">本檔是 HTML 版 Markdown 說明，不包含完整答案。</p>
+
+    <section>
+      <h2>三個檔案</h2>
+      <table>
+        <tr><th>檔案</th><th>角色</th><th>是否放完整答案</th></tr>
+        <tr><td>index.html</td><td>練習入口，給同學與 Gemini / Canva 看</td><td>否</td></tr>
+        <tr><td>guide.html</td><td>HTML 版附加說明，給人看</td><td>否</td></tr>
+        <tr><td>guide.md</td><td>Markdown 版附加說明，給教材與 AI 上下文使用</td><td>否</td></tr>
+      </table>
+    </section>
+
+    <section>
+      <h2>座標系</h2>
+      <p>老師使用圖形座標系，記錄 <code>x / y</code>，只能在老師區域內移動。學生使用座位絕對座標系，記錄 <code>seatId</code>，只能吸附學生座位。</p>
+    </section>
+
+    <section>
+      <h2>人物規則</h2>
+      <ul>
+        <li>姓名空白時，人物卡不顯示。</li>
+        <li>學生可選男 / 女，小圓點依性別變色。</li>
+        <li>老師小圓點固定綠色，不受男女欄位影響。</li>
+        <li>學生拖到已有人的座位時，兩位學生交換 seatId。</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>範例團體</h2>
+      <p>預設範例團體是英文姓名，4 男 4 女。載入密碼是 <code>20260522</code>。這是靜態頁面的教學級治理示範，不是後端權限控管。</p>
+      <table>
+        <tr><th>Name</th><th>Gender</th></tr>
+        <tr><td>Alex</td><td>male</td></tr>
+        <tr><td>Bella</td><td>female</td></tr>
+        <tr><td>Chris</td><td>male</td></tr>
+        <tr><td>Diana</td><td>female</td></tr>
+        <tr><td>Ethan</td><td>male</td></tr>
+        <tr><td>Fiona</td><td>female</td></tr>
+        <tr><td>George</td><td>male</td></tr>
+        <tr><td>Hannah</td><td>female</td></tr>
+      </table>
+    </section>
+
+    <section>
+      <h2>資料表設計</h2>
+      <table>
+        <tr><th>Sheet</th><th>用途</th></tr>
+        <tr><td>people</td><td>人物資料：姓名、角色、性別、色卡、座位或自由座標</td></tr>
+        <tr><td>seats</td><td>座位資料：固定桌位與座位座標</td></tr>
+        <tr><td>colors</td><td>色卡資料：OCR 用 RGB 色彩基準</td></tr>
+        <tr><td>rules</td><td>工程規則：角色邊界、座標系、匯入規則</td></tr>
+        <tr><td>views</td><td>視角定義：老師視角與學生視角</td></tr>
+      </table>
+    </section>
+
+    <section>
+      <h2>工程模式</h2>
+      <p>工程模式以學生視角為標準座標。使用者點一個案件後，系統應在座位 SVG 上浮出註解圖層，說明目前規則。</p>
+    </section>
+  </main>
+</body>
+</html>
